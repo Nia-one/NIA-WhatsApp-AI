@@ -67,3 +67,15 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+app.post("/webhook", (req, res) => {
+
+    console.log("################################");
+    console.log("REAL WEBHOOK HIT");
+    console.log("Headers:", req.headers);
+    console.log("Body:", JSON.stringify(req.body));
+    console.log("################################");
+
+    res.sendStatus(200);
+});
