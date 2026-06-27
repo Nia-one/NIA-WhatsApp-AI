@@ -11,7 +11,9 @@ app.get("/", (req, res) => {
     res.send("NIA WhatsApp AI Bot is Running");
 });
 
-// WhatsApp Verification
+// =======================================
+// WEBHOOK VERIFICATION
+// =======================================
 app.get("/webhook", (req, res) => {
 
     const mode = req.query["hub.mode"];
@@ -27,6 +29,18 @@ app.get("/webhook", (req, res) => {
     }
 
     return res.sendStatus(403);
+
+});
+
+// =======================================
+// RECEIVE WHATSAPP MESSAGES
+// =======================================
+app.post("/webhook", (req, res) => {
+
+    console.log("========== NEW WEBHOOK ==========");
+    console.log(JSON.stringify(req.body, null, 2));
+
+    res.sendStatus(200);
 
 });
 
