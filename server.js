@@ -37,13 +37,31 @@ app.get("/webhook", (req, res) => {
 // =======================================
 app.post("/webhook", (req, res) => {
 
-    console.log("========== NEW WEBHOOK ==========");
+    console.log("================================");
+    console.log("NEW WEBHOOK");
+    console.log("================================");
+
     console.log(JSON.stringify(req.body, null, 2));
+
+    if (req.body.object === "whatsapp_business_account") {
+
+        const entry = req.body.entry?.[0];
+        const changes = entry?.changes?.[0];
+        const value = changes?.value;
+        const message = value?.messages?.[0];
+
+        if (message) {
+
+            console.log("Incoming Message:");
+            console.log(message.text?.body);
+
+        }
+
+    }
 
     res.sendStatus(200);
 
 });
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
