@@ -3,6 +3,11 @@ require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const supabase = require("./config/supabase");
+const { getProducts } = require("./services/productService");
+const {
+    getConversationState,
+    saveConversationState
+} = require("./services/conversationService");
 
 const app = express();
 
@@ -16,36 +21,11 @@ app.get("/", (req, res) => {
 
 app.get("/test-db", async (req, res) => {
 
-    const url =
-        process.env.SUPABASE_URL +
-        "/rest/v1/product_master?select=*";
+    const products = await getProducts();
 
-    try {
-
-        const response = await fetch(url, {
-            headers: {
-                apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-                Authorization:
-                    `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-            }
-        });
-
-        const data = await response.text();
-
-        console.log(data);
-
-        res.send(data);
-
-    } catch (err) {
-
-        console.error(err);
-
-        res.status(500).send(err.message);
-
-    }
+    res.json(products);
 
 });
-
 // =======================================
 // WEBHOOK VERIFICATION
 // =======================================
@@ -81,18 +61,36 @@ app.post("/webhook", async (req, res) => {
             return res.sendStatus(200);
         }
 
-        console.log("================================");
-        console.log("From :", message.from);
-        console.log("Type :", message.type);
-        console.log("Text :", message.text?.body);
-        console.log("================================");
+const mobile = message.from;
 
-        await sendWhatsAppMessage(
-            message.from,
-            "Hello 👋 Welcome to Nia Essentials!"
-        );
+const state = await getConversationState(mobile);
 
-        res.sendStatus(200);
+console.log("================================");
+console.log("From :", mobile);
+console.log("Current State :", state?.current_state || "NEW");
+console.log("Text :", message.text?.body);
+console.log("================================");
+
+if (!state) {
+
+    await saveConversationState(
+        mobile,
+        "HOME"
+    );
+
+}
+
+await sendWhatsAppMessage(
+    mobile,
+    "Hello 👋 Welcome to Nia Essentials!\n\n" +
+    "1️⃣ Browse Products\n" +
+    "2️⃣ View Cart\n" +
+    "3️⃣ Checkout"
+);
+
+return res.sendStatus(200);
+
+        
 
     } catch (err) {
 
