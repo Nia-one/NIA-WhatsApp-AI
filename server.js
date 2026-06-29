@@ -70,6 +70,33 @@ const mobile = message.from;
 const userMessage = (message.text?.body || "").trim();
 
 let state = await getConversationState(mobile);
+const command = userMessage.toLowerCase().trim();
+
+if (
+    [
+        "hi",
+        "hello",
+        "hey",
+        "start",
+        "menu",
+        "home"
+    ].includes(command)
+) {
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "HOME",
+            current_product_index: 0,
+            last_product_id: null
+        }
+    );
+
+    await sendHomeMenu(mobile);
+
+    return res.sendStatus(200);
+
+}
 
 console.log("========== DEBUG ==========");
 console.log("Raw:", message.text?.body);
