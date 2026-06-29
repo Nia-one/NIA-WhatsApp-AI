@@ -30,7 +30,33 @@ async function saveConversationState(mobile, state) {
     console.log(error);
 
 }
+async function updateConversation(mobile, values) {
+
+    const { data, error } = await supabase
+        .from("conversation_state")
+        .update(values)
+        .eq("customer_mobile", mobile);
+
+    return { data, error };
+
+}
+
+async function resetConversation(mobile) {
+
+    await supabase
+        .from("conversation_state")
+        .update({
+            current_state: "HOME",
+            current_product_index: 0,
+            last_product_id: null
+        })
+        .eq("customer_mobile", mobile);
+
+}
+
 module.exports = {
     getConversationState,
-    saveConversationState
+    saveConversationState,
+    updateConversation,
+    resetConversation
 };

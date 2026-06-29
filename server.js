@@ -6,9 +6,13 @@ const supabase = require("./config/supabase");
 const { getProducts } = require("./services/productService");
 const {
     getConversationState,
-    saveConversationState
+    saveConversationState,
+    updateConversation,
+    resetConversation
 } = require("./services/conversationService");
-
+const {
+    getProductByIndex
+} = require("./services/productBrowser");
 const app = express();
 
 app.use(express.json());
@@ -102,27 +106,38 @@ if (state.current_state === "HOME") {
     // Option 1
     if (String(userMessage).trim() === "1") {
 
-        console.log("✅ Matched option 1");
+    const item = await getProductByIndex(0);
 
-        const products = await getProducts();
+    if (!item) {
 
-        let msg = "🛒 *Available Products*\n\n";
-
-        products.forEach((p, index) => {
-
-            msg +=
-                `${index + 1}. ${p.product_name}\n` +
-                `MRP: ₹${p.mrp}\n` +
-                `Price: ₹${p.nia_price}\n` +
-                `Save: ₹${p.nia_savings}\n\n`;
-
-        });
-
-        await sendWhatsAppMessage(mobile, msg);
+        await sendWhatsAppMessage(
+            mobile,
+            "❌ No products are available right now."
+        );
 
         return res.sendStatus(200);
 
     }
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "PRODUCT_BROWSING",
+            current_product_index: 0,
+            last_product_id: item.product.id
+        }
+    );
+
+    await sendProductCard(
+        mobile,
+        item.product,
+        1,
+        item.total
+    );
+
+    return res.sendStatus(200);
+
+}
 
     // Option 2
     if (String(userMessage).trim() === "2") {
@@ -212,6 +227,42 @@ Please choose one of the following options:
 3️⃣ Checkout
 
 💬 Reply with *1*, *2* or *3* to continue.`
+    );
+
+}
+
+async function sendProductCard(
+    mobile,
+    product,
+    current,
+    total
+) {
+
+    await sendWhatsAppMessage(
+        mobile,
+`🛒 *NIA Essentials*
+
+━━━━━━━━━━━━━━━━━━
+
+🛍️ *Product ${current} of ${total}*
+
+📦 *${product.product_name}*
+
+💰 MRP : ₹${product.mrp}
+
+🔥 NIA Price : ₹${product.nia_price}
+
+🎁 You Save : ₹${product.nia_savings}
+
+━━━━━━━━━━━━━━━━━━
+
+What would you like to do?
+
+1️⃣ Add to Cart
+
+2️⃣ Next Product
+
+3️⃣ Main Menu`
     );
 
 }
