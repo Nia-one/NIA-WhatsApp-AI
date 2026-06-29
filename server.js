@@ -62,34 +62,89 @@ app.post("/webhook", async (req, res) => {
         }
 
 const mobile = message.from;
+const userMessage = (message.text?.body || "").trim();
 
-const state = await getConversationState(mobile);
+let state = await getConversationState(mobile);
 
 console.log("================================");
 console.log("From :", mobile);
-console.log("Current State :", state?.current_state || "NEW");
-console.log("Text :", message.text?.body);
+console.log("State :", state?.current_state || "NEW");
+console.log("Message :", userMessage);
 console.log("================================");
 
+// First Time User
 if (!state) {
 
-    await saveConversationState(
+    await saveConversationState(mobile, "HOME");
+
+    await sendWhatsAppMessage(
         mobile,
-        "HOME"
+        "Hello 👋 Welcome to Nia Essentials!\n\n" +
+        "Please choose an option:\n\n" +
+        "Type 1 for Browse Products\n" +
+        "Type 2 for View Cart\n" +
+        "Type 3 for Checkout"
     );
+
+    return res.sendStatus(200);
 
 }
 
-await sendWhatsAppMessage(
-    mobile,
-    "Hello 👋 Welcome to Nia Essentials!\n\n" +
-    "1️⃣ Browse Products\n" +
-    "2️⃣ View Cart\n" +
-    "3️⃣ Checkout"
-);
+// HOME MENU
+if (state.current_state === "HOME") {
 
-return res.sendStatus(200);
+    if (userMessage === "1") {
 
+        const products = await getProducts();
+
+        let msg = "🛒 *Available Products*\n\n";
+
+        products.forEach((p, index) => {
+
+            msg +=
+                `${index + 1}. ${p.product_name}\n` +
+                `MRP: ₹${p.mrp}\n` +
+                `Price: ₹${p.nia_price}\n` +
+                `Save: ₹${p.nia_savings}\n\n`;
+
+        });
+
+        await sendWhatsAppMessage(mobile, msg);
+
+        return res.sendStatus(200);
+
+    }
+
+    if (userMessage === "2") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "🛒 Your cart is currently empty."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    if (userMessage === "3") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "✅ Checkout feature is coming next."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    await sendWhatsAppMessage(
+        mobile,
+        "❌ Invalid option.\n\nPlease enter:\n1 for Browse Products\n2 for View Cart\n3 for Checkout"
+    );
+
+    return res.sendStatus(200);
+
+}
         
 
     } catch (err) {
