@@ -152,17 +152,13 @@ if (state.current_state === "HOME") {
 
     }
 
-    console.log("❌ No option matched");
+        console.log("❌ No option matched");
 
-    await sendWhatsAppMessage(
-        mobile,
-        "❌ Invalid option.\n\nPlease enter:\n1 for Browse Products\n2 for View Cart\n3 for Checkout"
-    );
+    await sendInvalidMenu(mobile);
 
     return res.sendStatus(200);
 
-}
-        
+}   // End HOME block
 
     } catch (err) {
 
@@ -178,11 +174,44 @@ async function sendHomeMenu(mobile) {
 
     await sendWhatsAppMessage(
         mobile,
-        "👋 Welcome to Nia Essentials!\n\n" +
-        "Please choose an option:\n\n" +
-        "Type 1️⃣ for Browse Products\n" +
-        "Type 2️⃣ for View Cart\n" +
-        "Type 3️⃣ for Checkout"
+`👋 *Welcome to NIA Essentials!*
+
+We're delighted to have you here. 😊
+
+🛍️ Get genuine daily essentials at exclusive member prices, delivered right to your doorstep.
+
+*How may I assist you today?*
+
+━━━━━━━━━━━━━━━━━━
+1️⃣ Browse Products
+
+2️⃣ View Cart
+
+3️⃣ Checkout
+━━━━━━━━━━━━━━━━━━
+
+💬 Reply with *1*, *2* or *3* to continue.`
+    );
+
+}
+
+async function sendInvalidMenu(mobile) {
+
+    await sendWhatsAppMessage(
+        mobile,
+`🤔 *I didn't quite understand that.*
+
+👋 *Welcome to NIA Essentials!*
+
+Please choose one of the following options:
+
+1️⃣ Browse Products
+
+2️⃣ View Cart
+
+3️⃣ Checkout
+
+💬 Reply with *1*, *2* or *3* to continue.`
     );
 
 }
