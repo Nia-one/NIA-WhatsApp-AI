@@ -89,7 +89,7 @@ app.post("/webhook", async (req, res) => {
 
         await sendWhatsAppMessage(
             message.from,
-            "Hello 👋 Welcome to NIA Essentials!"
+            "Hello 👋 Welcome to Nia Essentials!"
         );
 
         res.sendStatus(200);
