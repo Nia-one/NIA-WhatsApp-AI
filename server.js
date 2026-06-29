@@ -11,7 +11,8 @@ const {
     resetConversation
 } = require("./services/conversationService");
 const {
-    getProductByIndex
+    getProductByIndex,
+    getNextProduct
 } = require("./services/productBrowser");
 const app = express();
 
@@ -174,6 +175,51 @@ if (state.current_state === "HOME") {
     return res.sendStatus(200);
 
 }   // End HOME block
+
+// =======================================
+// PRODUCT BROWSING
+// =======================================
+
+if (state.current_state === "PRODUCT_BROWSING") {
+
+    // Next Product
+    if (String(userMessage).trim() === "2") {
+
+        const item = await getNextProduct(
+            state.current_product_index
+        );
+
+        if (!item) {
+
+            await sendWhatsAppMessage(
+                mobile,
+                "✅ You've reached the last product.\n\nReply:\n1️⃣ Start Again\n2️⃣ View Cart\n3️⃣ Main Menu"
+            );
+
+            return res.sendStatus(200);
+
+        }
+
+        await updateConversation(
+            mobile,
+            {
+                current_product_index: item.index,
+                last_product_id: item.product.id
+            }
+        );
+
+        await sendProductCard(
+            mobile,
+            item.product,
+            item.index + 1,
+            item.total
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+}
 
     } catch (err) {
 

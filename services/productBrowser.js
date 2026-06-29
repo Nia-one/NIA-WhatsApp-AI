@@ -15,6 +15,25 @@ async function getProductByIndex(index) {
 
 }
 
+async function getNextProduct(currentIndex) {
+
+    const products = await getProducts();
+
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex >= products.length) {
+        return null;
+    }
+
+    return {
+        product: products[nextIndex],
+        index: nextIndex,
+        total: products.length
+    };
+
+}
+
 module.exports = {
-    getProductByIndex
+    getProductByIndex,
+    getNextProduct
 };
