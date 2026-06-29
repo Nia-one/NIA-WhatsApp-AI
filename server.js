@@ -63,6 +63,9 @@ app.post("/webhook", async (req, res) => {
 
 const mobile = message.from;
 const userMessage = (message.text?.body || "").trim();
+console.log("Raw Message:", message.text?.body);
+console.log("Processed Message:", JSON.stringify(userMessage));
+console.log("Length:", userMessage.length);
 
 let state = await getConversationState(mobile);
 
@@ -81,9 +84,9 @@ if (!state) {
         mobile,
         "Hello 👋 Welcome to Nia Essentials!\n\n" +
         "Please choose an option:\n\n" +
-        "Type 1 for Browse Products\n" +
-        "Type 2 for View Cart\n" +
-        "Type 3 for Checkout"
+        "Type 1️⃣ for Browse Products\n" +
+        "Type 2️⃣ for View Cart\n" +
+        "Type 3️⃣ for Checkout"
     );
 
     return res.sendStatus(200);
