@@ -63,19 +63,20 @@ app.post("/webhook", async (req, res) => {
 
 const mobile = message.from;
 const userMessage = (message.text?.body || "").trim();
+
+let state = await getConversationState(mobile);
+
 console.log("========== DEBUG ==========");
 console.log("Raw:", message.text?.body);
 console.log("Processed:", JSON.stringify(userMessage));
-console.log("State:", state?.current_state);
+console.log("State:", state?.current_state || "NEW");
 console.log("===========================");
-let state = await getConversationState(mobile);
 
 console.log("================================");
 console.log("From :", mobile);
 console.log("State :", state?.current_state || "NEW");
 console.log("Message :", userMessage);
 console.log("================================");
-
 // First Time User
 if (!state) {
 
