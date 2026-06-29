@@ -63,10 +63,11 @@ app.post("/webhook", async (req, res) => {
 
 const mobile = message.from;
 const userMessage = (message.text?.body || "").trim();
-console.log("Raw Message:", message.text?.body);
-console.log("Processed Message:", JSON.stringify(userMessage));
-console.log("Length:", userMessage.length);
-
+console.log("========== DEBUG ==========");
+console.log("Raw:", message.text?.body);
+console.log("Processed:", JSON.stringify(userMessage));
+console.log("State:", state?.current_state);
+console.log("===========================");
 let state = await getConversationState(mobile);
 
 console.log("================================");
