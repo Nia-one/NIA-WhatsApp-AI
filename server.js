@@ -218,8 +218,25 @@ if (state.current_state === "PRODUCT_BROWSING") {
         return res.sendStatus(200);
 
     }
+    // 👇 ADD THIS BLOCK
+    await sendWhatsAppMessage(
+        mobile,
+`🤔 *I didn't quite understand that.*
+
+Please choose one of the options below:
+
+1️⃣ Add to Cart
+
+2️⃣ Next Product
+
+3️⃣ Main Menu`
+    );
+
+    return res.sendStatus(200);
 
 }
+
+
 
     } catch (err) {
 
