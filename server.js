@@ -170,9 +170,8 @@ if (state.current_state === "HOME") {
 
         console.log("❌ No option matched");
 
-    await sendInvalidMenu(mobile);
-
-    return res.sendStatus(200);
+    await sendHomeMenu(mobile);
+return res.sendStatus(200);
 
 }   // End HOME block
 
