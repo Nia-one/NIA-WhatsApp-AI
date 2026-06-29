@@ -11,7 +11,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-    res.send("NIA WhatsApp AI Bot is Running");
+    res.send("Nia WhatsApp AI Bot is Running");
 });
 
 app.get("/test-db", async (req, res) => {
