@@ -91,11 +91,18 @@ if (!state) {
 
 }
     
-
+console.log("Current State =", state.current_state);
+console.log("User Message =", JSON.stringify(userMessage));
 // HOME MENU
 if (state.current_state === "HOME") {
 
-    if (userMessage === "1") {
+    console.log(">>> Entered HOME block");
+    console.log(">>> Comparing userMessage:", JSON.stringify(userMessage));
+
+    // Option 1
+    if (String(userMessage).trim() === "1") {
+
+        console.log("✅ Matched option 1");
 
         const products = await getProducts();
 
@@ -117,7 +124,10 @@ if (state.current_state === "HOME") {
 
     }
 
-    if (userMessage === "2") {
+    // Option 2
+    if (String(userMessage).trim() === "2") {
+
+        console.log("✅ Matched option 2");
 
         await sendWhatsAppMessage(
             mobile,
@@ -128,7 +138,10 @@ if (state.current_state === "HOME") {
 
     }
 
-    if (userMessage === "3") {
+    // Option 3
+    if (String(userMessage).trim() === "3") {
+
+        console.log("✅ Matched option 3");
 
         await sendWhatsAppMessage(
             mobile,
@@ -138,6 +151,8 @@ if (state.current_state === "HOME") {
         return res.sendStatus(200);
 
     }
+
+    console.log("❌ No option matched");
 
     await sendWhatsAppMessage(
         mobile,
