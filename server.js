@@ -80,20 +80,17 @@ console.log("================================");
 // First Time User
 if (!state) {
 
-    await saveConversationState(mobile, "HOME");
-
-    await sendWhatsAppMessage(
+    await saveConversationState(
         mobile,
-        "Hello 👋 Welcome to Nia Essentials!\n\n" +
-        "Please choose an option:\n\n" +
-        "Type 1️⃣ for Browse Products\n" +
-        "Type 2️⃣ for View Cart\n" +
-        "Type 3️⃣ for Checkout"
+        "HOME"
     );
+
+    await sendHomeMenu(mobile);
 
     return res.sendStatus(200);
 
 }
+    
 
 // HOME MENU
 if (state.current_state === "HOME") {
@@ -161,6 +158,19 @@ if (state.current_state === "HOME") {
     }
 
 });
+
+async function sendHomeMenu(mobile) {
+
+    await sendWhatsAppMessage(
+        mobile,
+        "👋 Welcome to Nia Essentials!\n\n" +
+        "Please choose an option:\n\n" +
+        "Type 1️⃣ for Browse Products\n" +
+        "Type 2️⃣ for View Cart\n" +
+        "Type 3️⃣ for Checkout"
+    );
+
+}
 
 async function sendWhatsAppMessage(to, message) {
 
