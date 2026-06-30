@@ -1,0 +1,73 @@
+const {
+    createOrder
+} = require("../../services/orderService");
+
+async function checkoutFlow({
+    mobile,
+    userMessage,
+    sendWhatsAppMessage,
+    sendHomeMenu
+}) {
+
+    // =========================
+    // Checkout Trigger
+    // =========================
+
+    if (userMessage === "1") {
+
+        const result = await createOrder(mobile);
+
+        if (!result) {
+            await sendWhatsAppMessage(
+                mobile,
+                "🛒 Your cart is empty. Add items before checkout."
+            );
+            return true;
+        }
+
+        await sendWhatsAppMessage(
+            mobile,
+`🎉 *Order Placed Successfully!*
+
+🧾 Order ID: ${result.orderId}
+
+💰 Total Paid: ₹${result.total}
+
+🚚 Your order is being processed.
+
+Thank you for shopping with NIA Essentials! 🙌`
+        );
+
+        await sendHomeMenu(mobile);
+
+        return true;
+    }
+
+    // =========================
+    // Back to Home
+    // =========================
+
+    if (userMessage === "2") {
+
+        await sendHomeMenu(mobile);
+        return true;
+    }
+
+    // =========================
+    // Default Checkout Screen
+    // =========================
+
+    await sendWhatsAppMessage(
+        mobile,
+`💳 *Checkout*
+
+1️⃣ Confirm Order
+2️⃣ Cancel & Go Home`
+    );
+
+    return true;
+}
+
+module.exports = {
+    checkoutFlow
+};

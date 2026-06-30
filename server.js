@@ -8,6 +8,11 @@ const supabase = require("./config/supabase");
 // NEW IMPORT
 const { homeFlow } = require("./src/flows/homeFlow");
 const { catalogueFlow } = require("./src/flows/catalogueFlow");
+const { productDetailsFlow } = require("./src/flows/productDetailsFlow");
+const { cartFlow } = require("./src/flows/cartFlow");
+const { checkoutFlow } = require("./src/flows/checkoutFlow");
+
+
 
 const { getProducts } = require("./services/productService");
 
@@ -19,12 +24,11 @@ const {
 } = require("./services/conversationService");
 
 const {
-    getProductByIndex,
-    getNextProduct,
     getProductsPage,
     getNextPage,
     getPreviousPage
 } = require("./services/productBrowser");
+
 
 const app = express();
 app.use(express.json());
@@ -39,7 +43,7 @@ app.get("/test-db", async (req, res) => {
 
     const products = await getProducts();
 
-    res.json(products);
+    res.json(products[0]);
 
 });
 // =======================================
@@ -385,60 +389,54 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
 }
 
 // =======================================
-// PRODUCT BROWSING
+// PRODUCT DETAILS
 // =======================================
 
-if (state.current_state === "PRODUCT_BROWSING") {
+if (state.current_state === "PRODUCT_DETAILS") {
 
-    // Next Product
-    if (String(userMessage).trim() === "2") {
-
-        const item = await getNextProduct(
-            state.current_product_index
-        );
-
-        if (!item) {
-
-            await sendWhatsAppMessage(
-                mobile,
-                "✅ You've reached the last product.\n\nReply:\n1️⃣ Start Again\n2️⃣ View Cart\n3️⃣ Main Menu"
-            );
-
-            return res.sendStatus(200);
-
-        }
-
-        await updateConversation(
-            mobile,
-            {
-                current_product_index: item.index,
-                last_product_id: item.product.id
-            }
-        );
-
-        await sendProductCard(
-            mobile,
-            item.product,
-            item.index + 1,
-            item.total
-        );
-
-        return res.sendStatus(200);
-
-    }
-    // 👇 ADD THIS BLOCK
-    await sendWhatsAppMessage(
+    await productDetailsFlow({
         mobile,
-`🤔 *I didn't quite understand that.*
+        state,
+        userMessage: String(userMessage).trim(),
+        sendWhatsAppMessage,
+        sendHomeMenu,
+        sendProductCatalogue
+    });
 
-Please choose one of the options below:
+    return res.sendStatus(200);
 
-1️⃣ Add to Cart
+}
 
-2️⃣ Next Product
+// =======================================
+// CART
+// =======================================
 
-3️⃣ Main Menu`
-    );
+if (state.current_state === "CART") {
+
+    await cartFlow({
+        mobile,
+        userMessage: String(userMessage).trim(),
+        sendWhatsAppMessage,
+        sendHomeMenu,
+        sendProductCatalogue
+    });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
+// CHECKOUT
+// =======================================
+
+if (state.current_state === "CHECKOUT") {
+
+    await checkoutFlow({
+        mobile,
+        userMessage: String(userMessage).trim(),
+        sendWhatsAppMessage,
+        sendHomeMenu
+    });
 
     return res.sendStatus(200);
 
@@ -502,41 +500,6 @@ Please choose one of the following options:
 
 }
 
-async function sendProductCard(
-    mobile,
-    product,
-    current,
-    total
-) {
-
-    await sendWhatsAppMessage(
-        mobile,
-`🛒 *NIA Essentials*
-
-━━━━━━━━━━━━━━━━━━
-
-🛍️ *Product ${current} of ${total}*
-
-📦 *${product.product_name}*
-
-💰 MRP : ₹${product.mrp}
-
-🔥 NIA Price : ₹${product.nia_price}
-
-🎁 You Save : ₹${product.nia_savings}
-
-━━━━━━━━━━━━━━━━━━
-
-What would you like to do?
-
-1️⃣ Add to Cart
-
-2️⃣ Next Product
-
-3️⃣ Main Menu`
-    );
-
-}
 
 async function sendProductCatalogue(
     mobile,

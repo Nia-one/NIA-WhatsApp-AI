@@ -1,0 +1,66 @@
+const supabase = require("../config/supabase");
+
+const {
+    getCart,
+    clearCart
+} = require("./cartService");
+
+async function createOrder(customerMobile) {
+
+    const cartItems = await getCart(customerMobile);
+
+    if (!cartItems.length) {
+        return null;
+    }
+
+    let total = 0;
+
+    // Create Order
+    const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+            customer_mobile: customerMobile,
+            total_amount: 0
+        })
+        .select()
+        .single();
+
+    if (orderError) {
+        console.error(orderError);
+        return null;
+    }
+
+    // Insert Order Items
+    for (const item of cartItems) {
+
+        total += item.price * item.quantity;
+
+        await supabase.from("order_items").insert({
+            order_id: order.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price
+        });
+
+    }
+
+    // Update total
+    await supabase
+        .from("orders")
+        .update({
+            total_amount: total
+        })
+        .eq("id", order.id);
+
+    // Clear cart
+    await clearCart(customerMobile);
+
+    return {
+        orderId: order.id,
+        total
+    };
+}
+
+module.exports = {
+    createOrder
+};

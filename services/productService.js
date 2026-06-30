@@ -15,6 +15,23 @@ async function getProducts() {
     return data;
 }
 
+async function getProductById(id) {
+
+    const { data, error } = await supabase
+        .from("product_master")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if (error) {
+        console.error(error);
+        return null;
+    }
+
+    return data;
+
+}
 module.exports = {
-    getProducts
+    getProducts,
+    getProductById
 };

@@ -25,14 +25,49 @@ async function catalogueFlow({
 
     if (["1", "2", "3", "4", "5"].includes(userMessage)) {
 
+    const pageSize = 5;
+    const page = state.current_page || 1;
+
+    const { getProducts } = require("../../services/productService");
+    const products = await getProducts();
+
+    const startIndex = (page - 1) * pageSize;
+
+    const selectedIndex = startIndex + (parseInt(userMessage) - 1);
+    const selectedProduct = products[selectedIndex];
+
+    if (!selectedProduct) {
         await sendWhatsAppMessage(
             mobile,
-            "🛠 Product Details screen will be implemented in the next step."
+            "❌ Product not found. Please try again."
         );
-
         return true;
-
     }
+
+    await updateConversation(mobile, {
+        current_state: "PRODUCT_DETAILS",
+        current_product_index: selectedIndex,
+        last_product_id: selectedProduct.id
+    });
+
+    await sendWhatsAppMessage(
+        mobile,
+        `🛍️ *${selectedProduct.product_name}*
+
+💰 MRP: ₹${selectedProduct.mrp}
+🔥 NIA Price: ₹${selectedProduct.nia_price}
+🎁 You Save: ₹${selectedProduct.nia_savings}
+
+📦 Ready for details view...
+
+Reply:
+1️⃣ Add to Cart
+2️⃣ Back to Catalogue
+3️⃣ Main Menu`
+    );
+
+    return true;
+}
 
     // ===============================
     // Previous Page

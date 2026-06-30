@@ -1,0 +1,136 @@
+const {
+    updateConversation
+} = require("../../services/conversationService");
+
+const {
+    getProductById
+} = require("../../services/productService");
+
+const {
+    addToCart
+} = require("../../services/cartService");
+
+async function productDetailsFlow({
+    mobile,
+    state,
+    userMessage,
+    sendWhatsAppMessage,
+    sendHomeMenu,
+    sendProductCatalogue
+}) {
+
+    const product = await getProductById(
+    state.last_product_id
+);
+
+    if (!product) {
+        await sendWhatsAppMessage(
+            mobile,
+            "❌ Product not found. Please go back and try again."
+        );
+        return true;
+    }
+// =========================
+// Add to Cart
+// =========================
+
+if (userMessage === "1") {
+
+    const added = await addToCart(
+        mobile,
+        product
+    );
+
+    if (!added) {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "❌ Unable to add product to cart."
+        );
+
+        return true;
+
+    }
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "CART"
+        }
+    );
+
+    await sendWhatsAppMessage(
+        mobile,
+`✅ *Added to Cart*
+
+🛒 ${product.product_name}
+
+💰 Price : ₹${product.nia_price}
+
+━━━━━━━━━━━━━━━━━━
+
+1️⃣ View Cart
+
+2️⃣ Continue Shopping
+
+3️⃣ Checkout`
+    );
+
+    return true;
+
+}
+
+    // =========================
+    // Back to Catalogue
+    // =========================
+    if (userMessage === "2") {
+
+        await updateConversation(mobile, {
+            current_state: "PRODUCT_CATALOGUE"
+        });
+
+        await sendProductCatalogue(
+            mobile,
+            await require("../../services/productBrowser").getProductsPage(
+                state.current_page || 1
+            )
+        );
+
+        return true;
+    }
+
+    // =========================
+    // Main Menu
+    // =========================
+    if (userMessage === "3") {
+
+        await updateConversation(mobile, {
+            current_state: "HOME"
+        });
+
+        await sendHomeMenu(mobile);
+
+        return true;
+    }
+
+    // =========================
+    // Default - Show Product Again
+    // =========================
+
+    await sendWhatsAppMessage(
+        mobile,
+        `🛍️ *${product.product_name}*
+
+💰 ₹${product.nia_price}
+
+1️⃣ Add to Cart
+2️⃣ Back
+3️⃣ Home`
+    );
+
+    return true;
+}
+
+module.exports = {
+    productDetailsFlow
+};
