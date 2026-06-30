@@ -7,6 +7,7 @@ const supabase = require("./config/supabase");
 
 // NEW IMPORT
 const { homeFlow } = require("./src/flows/homeFlow");
+const { catalogueFlow } = require("./src/flows/catalogueFlow");
 
 const { getProducts } = require("./services/productService");
 
@@ -235,6 +236,7 @@ if (state.current_state === "HOME") {
 // PRODUCT CATALOGUE
 // =======================================
 
+/*
 if (state.current_state === "PRODUCT_CATALOGUE") {
 
     // ===============================
@@ -357,6 +359,26 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
         mobile,
         page
     );
+
+    return res.sendStatus(200);
+
+}
+*/
+
+// =======================================
+// PRODUCT CATALOGUE
+// =======================================
+
+if (state.current_state === "PRODUCT_CATALOGUE") {
+
+    await catalogueFlow({
+        mobile,
+        state,
+        userMessage: String(userMessage).trim(),
+        sendHomeMenu,
+        sendProductCatalogue,
+        sendWhatsAppMessage
+    });
 
     return res.sendStatus(200);
 
