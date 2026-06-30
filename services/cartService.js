@@ -62,13 +62,18 @@ async function addToCart(customerMobile, product) {
 
 async function getCart(customerMobile) {
 
+    console.log("Checkout Mobile:", customerMobile);
+
     const { data, error } = await supabase
         .from("cart")
         .select("*")
         .eq("customer_mobile", customerMobile);
 
+    console.log("Cart Data:", data);
+    console.log("Cart Error:", error);
+
     if (error) {
-        console.error("Cart Fetch Error:", error);
+        console.error(error);
         return [];
     }
 
