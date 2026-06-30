@@ -48,14 +48,20 @@ async function homeFlow({
 
     if (userMessage === "3") {
 
-        await sendWhatsAppMessage(
-            mobile,
-            "✅ Checkout feature is coming next."
-        );
+    await updateConversation(mobile, {
+        current_state: "CHECKOUT"
+    });
 
-        return true;
-    }
+    await sendWhatsAppMessage(
+        mobile,
+`💳 *Checkout*
 
+1️⃣ Confirm Order
+2️⃣ Cancel & Go Home`
+    );
+
+    return true;
+}
     await sendHomeMenu(mobile);
 
     return true;

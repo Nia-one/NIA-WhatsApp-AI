@@ -2,6 +2,10 @@ const {
     createOrder
 } = require("../../services/orderService");
 
+const {
+    updateConversation
+} = require("../../services/conversationService");
+
 async function checkoutFlow({
     mobile,
     userMessage,
@@ -10,7 +14,7 @@ async function checkoutFlow({
 }) {
 
     // =========================
-    // Checkout Trigger
+    // Confirm Order
     // =========================
 
     if (userMessage === "1") {
@@ -18,10 +22,12 @@ async function checkoutFlow({
         const result = await createOrder(mobile);
 
         if (!result) {
+
             await sendWhatsAppMessage(
                 mobile,
                 "🛒 Your cart is empty. Add items before checkout."
             );
+
             return true;
         }
 
@@ -38,18 +44,27 @@ async function checkoutFlow({
 Thank you for shopping with NIA Essentials! 🙌`
         );
 
+        await updateConversation(mobile, {
+            current_state: "HOME"
+        });
+
         await sendHomeMenu(mobile);
 
         return true;
     }
 
     // =========================
-    // Back to Home
+    // Cancel & Go Home
     // =========================
 
     if (userMessage === "2") {
 
+        await updateConversation(mobile, {
+            current_state: "HOME"
+        });
+
         await sendHomeMenu(mobile);
+
         return true;
     }
 

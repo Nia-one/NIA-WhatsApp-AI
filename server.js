@@ -10,7 +10,10 @@ const { homeFlow } = require("./src/flows/homeFlow");
 const { catalogueFlow } = require("./src/flows/catalogueFlow");
 const { productDetailsFlow } = require("./src/flows/productDetailsFlow");
 const { cartFlow } = require("./src/flows/cartFlow");
-const { checkoutFlow } = require("./src/flows/checkoutFlow");
+const { checkoutFlow } = require("./src/flows/checkoutFlow.js");
+const {
+    sendWhatsAppButtons
+} = require("./services/whatsappButtons");
 
 
 
@@ -195,18 +198,7 @@ if (state.current_state === "HOME") {
     }
 
     // Option 3
-    if (String(userMessage).trim() === "3") {
-
-        console.log("✅ Matched option 3");
-
-        await sendWhatsAppMessage(
-            mobile,
-            "✅ Checkout feature is coming next."
-        );
-
-        return res.sendStatus(200);
-
-    }
+    
 
         console.log("❌ No option matched");
 
@@ -456,28 +448,44 @@ if (state.current_state === "CHECKOUT") {
 
 async function sendHomeMenu(mobile) {
 
-    await sendWhatsAppMessage(
+    await sendWhatsAppButtons(
         mobile,
-`👋 *Welcome to NIA Essentials!*
+
+`👋 *Welcome to Nia Essentials!*
 
 We're delighted to have you here. 😊
 
 🛍️ Get genuine daily essentials at exclusive member prices, delivered right to your doorstep.
 
-*How may I assist you today?*
+*How may I assist you today?*`,
 
-━━━━━━━━━━━━━━━━━━
-1️⃣ Browse Products
-
-2️⃣ View Cart
-
-3️⃣ Checkout
-━━━━━━━━━━━━━━━━━━
-
-💬 Reply with *1*, *2* or *3* to continue.`
+        [
+            {
+                type: "reply",
+                reply: {
+                    id: "1",
+                    title: "🛍 Shop"
+                }
+            },
+            {
+                type: "reply",
+                reply: {
+                    id: "2",
+                    title: "🛒 Cart"
+                }
+            },
+            {
+                type: "reply",
+                reply: {
+                    id: "3",
+                    title: "💳 Checkout"
+                }
+            }
+        ]
     );
 
 }
+
 
 async function sendInvalidMenu(mobile) {
 
