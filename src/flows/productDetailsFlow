@@ -1,3 +1,4 @@
+const { cartFlow } = require("./cartFlow");
 const {
     updateConversation
 } = require("../../services/conversationService");
@@ -59,25 +60,15 @@ if (userMessage === "1") {
         }
     );
 
-    await sendWhatsAppMessage(
-        mobile,
-`✅ *Added to Cart*
+    await cartFlow({
+    mobile,
+    userMessage: "",
+    sendWhatsAppMessage,
+    sendHomeMenu,
+    sendProductCatalogue
+});
 
-🛒 ${product.product_name}
-
-💰 Price : ₹${product.nia_price}
-
-━━━━━━━━━━━━━━━━━━
-
-1️⃣ View Cart
-
-2️⃣ Continue Shopping
-
-3️⃣ Checkout`
-    );
-
-    return true;
-
+return true;
 }
 
     // =========================
