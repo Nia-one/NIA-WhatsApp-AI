@@ -1,15 +1,22 @@
+
 require("dotenv").config();
 
 const express = require("express");
 const axios = require("axios");
 const supabase = require("./config/supabase");
+
+// NEW IMPORT
+const { homeFlow } = require("./src/flows/homeFlow");
+
 const { getProducts } = require("./services/productService");
+
 const {
     getConversationState,
     saveConversationState,
     updateConversation,
     resetConversation
 } = require("./services/conversationService");
+
 const {
     getProductByIndex,
     getNextProduct,
@@ -17,8 +24,8 @@ const {
     getNextPage,
     getPreviousPage
 } = require("./services/productBrowser");
-const app = express();
 
+const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
@@ -129,8 +136,8 @@ if (!state) {
 console.log("Current State =", state.current_state);
 console.log("User Message =", JSON.stringify(userMessage));
 // HOME MENU
+/*
 if (state.current_state === "HOME") {
-
     console.log(">>> Entered HOME block");
     console.log(">>> Comparing userMessage:", JSON.stringify(userMessage));
 
@@ -200,8 +207,29 @@ if (state.current_state === "HOME") {
 
     await sendHomeMenu(mobile);
 return res.sendStatus(200);
-
 }   // End HOME block
+*/
+// =======================================
+// HOME
+// =======================================
+
+if (state.current_state === "HOME") {
+
+    await homeFlow({
+        mobile,
+        userMessage: String(userMessage).trim(),
+        sendHomeMenu,
+        sendProductCatalogue,
+        sendWhatsAppMessage
+    });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
+// PRODUCT CATALOGUE
+// =======================================
 
 // =======================================
 // PRODUCT CATALOGUE
