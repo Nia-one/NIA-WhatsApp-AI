@@ -52,8 +52,27 @@ async function getProductsPage(page = 1) {
 
 }
 
+async function getNextPage(currentPage) {
+
+    return getProductsPage(currentPage + 1);
+
+}
+
+async function getPreviousPage(currentPage) {
+
+    if (currentPage <= 1) {
+
+        return getProductsPage(1);
+
+    }
+
+    return getProductsPage(currentPage - 1);
+
+}
 module.exports = {
     getProductByIndex,
     getNextProduct,
-    getProductsPage
+    getProductsPage,
+    getNextPage,
+    getPreviousPage
 };

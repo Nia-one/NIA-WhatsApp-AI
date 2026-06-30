@@ -47,6 +47,7 @@ async function resetConversation(mobile) {
         .from("conversation_state")
         .update({
             current_state: "HOME",
+            current_page: 1,
             current_product_index: 0,
             last_product_id: null
         })

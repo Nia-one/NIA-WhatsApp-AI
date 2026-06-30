@@ -13,7 +13,9 @@ const {
 const {
     getProductByIndex,
     getNextProduct,
-    getProductsPage
+    getProductsPage,
+    getNextPage,
+    getPreviousPage
 } = require("./services/productBrowser");
 const app = express();
 
@@ -149,12 +151,13 @@ if (state.current_state === "HOME") {
     }
 
     await updateConversation(
-        mobile,
-        {
-            current_state: "PRODUCT_CATALOGUE",
-            current_product_index: 0
-        }
-    );
+    mobile,
+    {
+        current_state: "PRODUCT_CATALOGUE",
+        current_page: 1,
+        current_product_index: 0
+    }
+);
 
     await sendProductCatalogue(
         mobile,
@@ -239,14 +242,36 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
     // ===============================
     if (userMessage === "7") {
 
+    const nextPage = await getNextPage(
+        state.current_page || 1
+    );
+
+    if (!nextPage.products.length) {
+
         await sendWhatsAppMessage(
             mobile,
-            "➡️ Next Page will be implemented next."
+            "✅ You have reached the last page of products."
         );
 
         return res.sendStatus(200);
 
     }
+
+    await updateConversation(
+        mobile,
+        {
+            current_page: (state.current_page || 1) + 1
+        }
+    );
+
+    await sendProductCatalogue(
+        mobile,
+        nextPage
+    );
+
+    return res.sendStatus(200);
+
+}
 
     // ===============================
     // View Cart
