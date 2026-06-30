@@ -201,6 +201,115 @@ return res.sendStatus(200);
 }   // End HOME block
 
 // =======================================
+// PRODUCT CATALOGUE
+// =======================================
+
+if (state.current_state === "PRODUCT_CATALOGUE") {
+
+    // ===============================
+    // Product Selection (1-5)
+    // ===============================
+    if (["1", "2", "3", "4", "5"].includes(userMessage)) {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "🛠 Product Details screen will be implemented in the next step."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // Previous Page
+    // ===============================
+    if (userMessage === "6") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "⬅️ Previous Page will be implemented next."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // Next Page
+    // ===============================
+    if (userMessage === "7") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "➡️ Next Page will be implemented next."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // View Cart
+    // ===============================
+    if (userMessage === "8") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "🛒 Your cart is currently empty."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // Checkout
+    // ===============================
+    if (userMessage === "9") {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "✅ Checkout feature is coming soon."
+        );
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // Main Menu
+    // ===============================
+    if (userMessage === "0") {
+
+        await updateConversation(
+            mobile,
+            {
+                current_state: "HOME",
+                current_product_index: 0
+            }
+        );
+
+        await sendHomeMenu(mobile);
+
+        return res.sendStatus(200);
+
+    }
+
+    // ===============================
+    // Invalid Input
+    // ===============================
+    const page = await getProductsPage(1);
+
+    await sendProductCatalogue(
+        mobile,
+        page
+    );
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
 // PRODUCT BROWSING
 // =======================================
 
