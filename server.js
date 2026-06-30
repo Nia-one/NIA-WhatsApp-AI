@@ -12,7 +12,8 @@ const {
 } = require("./services/conversationService");
 const {
     getProductByIndex,
-    getNextProduct
+    getNextProduct,
+    getProductsPage
 } = require("./services/productBrowser");
 const app = express();
 
@@ -134,9 +135,9 @@ if (state.current_state === "HOME") {
     // Option 1
     if (String(userMessage).trim() === "1") {
 
-    const item = await getProductByIndex(0);
+    const page = await getProductsPage(1);
 
-    if (!item) {
+    if (!page.products.length) {
 
         await sendWhatsAppMessage(
             mobile,
@@ -150,17 +151,14 @@ if (state.current_state === "HOME") {
     await updateConversation(
         mobile,
         {
-            current_state: "PRODUCT_BROWSING",
-            current_product_index: 0,
-            last_product_id: item.product.id
+            current_state: "PRODUCT_CATALOGUE",
+            current_product_index: 0
         }
     );
 
-    await sendProductCard(
+    await sendProductCatalogue(
         mobile,
-        item.product,
-        1,
-        item.total
+        page
     );
 
     return res.sendStatus(200);
@@ -352,6 +350,52 @@ What would you like to do?
 2️⃣ Next Product
 
 3️⃣ Main Menu`
+    );
+
+}
+
+async function sendProductCatalogue(
+    mobile,
+    data
+) {
+
+    let msg =
+`🛒 *NIA Essentials*
+
+📄 Products ${((data.page - 1) * 5) + 1}-${Math.min(data.page * 5, data.totalProducts)} of ${data.totalProducts}
+
+━━━━━━━━━━━━━━━━━━
+
+`;
+
+    data.products.forEach((p, index) => {
+
+        msg +=
+`${index + 1}️⃣ *${p.product_name}*
+🏷️ MRP ₹${p.mrp} | 💚 ₹${p.nia_price} | 🎁 Save ₹${p.nia_savings}
+
+`;
+
+    });
+
+    msg +=
+`━━━━━━━━━━━━━━━━━━
+
+6️⃣ ⬅️ Previous Page
+
+7️⃣ ➡️ Next Page
+
+8️⃣ 🛒 View Cart
+
+9️⃣ ✅ Checkout
+
+0️⃣ 🏠 Main Menu
+
+💬 Reply with the product number (1-5).`;
+
+    await sendWhatsAppMessage(
+        mobile,
+        msg
     );
 
 }

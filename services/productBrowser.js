@@ -33,7 +33,27 @@ async function getNextProduct(currentIndex) {
 
 }
 
+async function getProductsPage(page = 1) {
+
+    const products = await getProducts();
+
+    const pageSize = 5;
+
+    const start = (page - 1) * pageSize;
+
+    const end = start + pageSize;
+
+    return {
+        products: products.slice(start, end),
+        page,
+        totalProducts: products.length,
+        totalPages: Math.ceil(products.length / pageSize)
+    };
+
+}
+
 module.exports = {
     getProductByIndex,
-    getNextProduct
+    getNextProduct,
+    getProductsPage
 };
