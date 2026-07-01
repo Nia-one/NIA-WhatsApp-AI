@@ -8,6 +8,10 @@ const {
 } = require("../utils/logger");
 
 const {
+    reduceInventory
+} = require("./inventoryService");
+
+const {
     addOrderTimeline
 } = require("./orderTimelineService");
 
@@ -121,16 +125,39 @@ console.error(orderError);
     // Insert Order Items
     for (const item of cartItems) {
 
-        total += item.price * item.quantity;
+    total += item.price * item.quantity;
 
-        await supabase.from("order_items").insert({
-            order_id: order.id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: item.price
-        });
+    await supabase.from("order_items").insert({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price
+    });
+
+    // ======================================
+    // Reduce Inventory
+    // ======================================
+
+    const inventoryUpdated = await reduceInventory(
+        item.product_id,
+        item.quantity
+    );
+
+    if (inventoryUpdated) {
+
+        logSuccess(
+            `Inventory updated for ${item.product_id}`
+        );
+
+    } else {
+
+        logError(
+            `Inventory update failed for ${item.product_id}`
+        );
 
     }
+
+}
 
     // Update total
     await supabase
