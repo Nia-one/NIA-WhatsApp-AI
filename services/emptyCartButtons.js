@@ -10,21 +10,15 @@ async function sendEmptyCartButtons(mobile) {
 Browse products and add items to continue shopping.`,
 
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "browse_products",
-                    title: "Browse Products"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "go_home",
-                    title: "Home"
-                }
-            }
-        ]
+    {
+        id: "browse_products",
+        title: "Browse Products"
+    },
+    {
+        id: "go_home",
+        title: "Home"
+    }
+]
     );
 
 }

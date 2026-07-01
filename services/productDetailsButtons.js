@@ -14,28 +14,19 @@ async function sendProductDetailsButtons(mobile, product) {
 🎁 You Save: ₹${product.nia_savings}`,
 
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "add_to_cart",
-                    title: "🛒 Add to Cart"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "back_to_products",
-                    title: "⬅️ Back"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "go_home",
-                    title: "🏠 Home"
-                }
-            }
-        ]
+    {
+        id: "add_to_cart",
+        title: "Add to Cart"
+    },
+    {
+        id: "back_to_products",
+        title: "Back"
+    },
+    {
+        id: "go_home",
+        title: "Home"
+    }
+]
     );
 
 }

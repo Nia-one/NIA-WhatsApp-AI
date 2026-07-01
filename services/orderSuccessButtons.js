@@ -20,14 +20,11 @@ async function sendOrderSuccessButtons(
 Thank you for shopping with *Nia Essentials*! ❤️`,
 
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "go_home",
-                    title: "Home"
-                }
-            }
-        ]
+    {
+        id: "go_home",
+        title: "Home"
+    }
+]
     );
 
 }

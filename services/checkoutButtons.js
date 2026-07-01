@@ -10,21 +10,15 @@ async function sendCheckoutButtons(mobile) {
 Please confirm your order.`,
 
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "confirm_order",
-                    title: "Confirm Order"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "cancel_order",
-                    title: "Cancel"
-                }
-            }
-        ]
+    {
+        id: "confirm_order",
+        title: "Confirm Order"
+    },
+    {
+        id: "cancel_order",
+        title: "Cancel"
+    }
+]
     );
 
 }

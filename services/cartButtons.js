@@ -6,28 +6,19 @@ async function sendCartButtons(mobile, cartText) {
         mobile,
         cartText,
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "checkout",
-                    title: "Checkout"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "browse_products",
-                    title: "Browse Products"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "clear_cart",
-                    title: "Clear Cart"
-                }
-            }
-        ]
+    {
+        id: "checkout",
+        title: "Checkout"
+    },
+    {
+        id: "browse_products",
+        title: "Browse Products"
+    },
+    {
+        id: "clear_cart",
+        title: "Clear Cart"
+    }
+]
     );
 
 }
