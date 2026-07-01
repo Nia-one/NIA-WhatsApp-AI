@@ -8,6 +8,10 @@ const {
 } = require("../utils/logger");
 
 const {
+    generateOrderNumber
+} = require("./orderNumberService");
+
+const {
     updateCustomerAnalytics
 } = require("./customerAnalyticsService");
 
@@ -55,11 +59,12 @@ logInfo("Customer ID", customer.id);
     let total = 0;
 
     // Create Order
+const orderNumber = await generateOrderNumber();
+
 const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
-        order_number: `ORD-${Date.now()}`,
-        customer_id: customer.id,
+        order_number: orderNumber,        customer_id: customer.id,
         guest_id: guest.id,
         studio_id: customer.studio_id || null,
 
