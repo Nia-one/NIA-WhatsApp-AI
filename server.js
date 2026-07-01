@@ -265,6 +265,34 @@ if (String(userMessage).startsWith("PRODUCT_")) {
 }
 
 // =======================================
+// GLOBAL - Browse Products
+// =======================================
+
+if (
+    String(userMessage).trim() === "browse_products"
+) {
+
+    const page = await getProductsPage(1);
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "PRODUCT_CATALOGUE",
+            current_page: 1,
+            current_product_index: 0
+        }
+    );
+
+    await sendProductList(
+        mobile,
+        page
+    );
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
 // HOME
 // =======================================
 
