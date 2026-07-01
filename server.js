@@ -549,7 +549,8 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
     sendHomeMenu,
     sendProductCatalogue,
     sendWhatsAppMessage,
-    sendProductDetailsButtons
+    sendProductDetailsButtons,
+    sendQuantityList
 });
     return res.sendStatus(200);
 
