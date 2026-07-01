@@ -108,10 +108,16 @@ if (
     // CONTINUE SHOPPING
     // =========================
     if (
-    
+
     userMessage === "2" ||
-    userMessage === "browse_products"
+    userMessage === "browse_products" ||
+    userMessage === "back_to_products"
 ) {
+
+    await updateConversation(mobile, {
+        current_state: "PRODUCT_CATALOGUE",
+        current_page: 1
+    });
 
     const page = await require("../../services/productBrowser")
         .getProductsPage(1);
