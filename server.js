@@ -259,7 +259,8 @@ if (String(userMessage).startsWith("PRODUCT_")) {
         sendHomeMenu,
         sendProductCatalogue,
         sendWhatsAppMessage,
-        sendProductDetailsButtons
+        sendProductDetailsButtons,
+        sendQuantityList
     });
 
     return res.sendStatus(200);
