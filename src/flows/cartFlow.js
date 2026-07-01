@@ -106,7 +106,7 @@ Subtotal: ₹${lineTotal}
     // CONTINUE SHOPPING
     // =========================
     if (
-    if (
+    
     userMessage === "2" ||
     userMessage === "browse_products"
 ) {
