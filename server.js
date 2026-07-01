@@ -18,6 +18,7 @@ const {
 const { 
     cartFlow 
 } = require("./src/flows/cartFlow");
+const quantityFlow = require("./src/flows/quantityFlow");
 const { 
     checkoutFlow 
 } = require("./src/flows/checkoutFlow");
@@ -555,6 +556,23 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
 }
 
 // =======================================
+// PRODUCT QUANTITY
+// =======================================
+
+if (state.current_state === "PRODUCT_QUANTITY") {
+
+    await quantityFlow({
+        mobile,
+        userMessage: String(userMessage).trim(),
+        sendQuantityList,
+        sendProductDetailsButtons
+    });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
 // PRODUCT DETAILS
 // =======================================
 
@@ -731,6 +749,8 @@ async function sendProductCatalogue(
 
 }
 
+
+
 async function sendProductList(mobile, page) {
 
    const rows = page.products.map(product => ({
@@ -751,6 +771,34 @@ await sendWhatsAppList(
         }
     ]
 );
+}
+
+async function sendQuantityList(mobile) {
+
+    const rows = [];
+
+    for (let i = 1; i <= 10; i++) {
+
+        rows.push({
+            id: `QTY_${i}`,
+            title: `${i}`,
+            description: `Quantity ${i}`
+        });
+
+    }
+
+    await sendWhatsAppList(
+        mobile,
+        "🔢 *Select Quantity*",
+        "Choose Quantity",
+        [
+            {
+                title: "Available Quantities",
+                rows
+            }
+        ]
+    );
+
 }
 
 async function sendWhatsAppMessage(to, message) {

@@ -48,13 +48,12 @@ if (userMessage.startsWith("PRODUCT_")) {
     }
 
     await updateConversation(mobile, {
-        current_state: "PRODUCT_DETAILS",
-        last_product_id: selectedProduct.id
-    });
+    current_state: "PRODUCT_QUANTITY",
+    last_product_id: selectedProduct.id
+});
 
-    await sendProductDetailsButtons(
-    mobile,
-    selectedProduct
+await sendQuantityList(
+    mobile
 );
 
 return true;
