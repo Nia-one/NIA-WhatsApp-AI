@@ -5,14 +5,27 @@ const {
     clearCart
 } = require("./cartService");
 
+const {
+    getOrCreateGuest
+} = require("./customerService");
+
 async function createOrder(customerMobile) {
 
+    // ======================================
+    // Get or Create Guest
+    // ======================================
+
+    const guest = await getOrCreateGuest(customerMobile);
+
+    console.log("Guest Details:", guest);
+
     const cartItems = await getCart(customerMobile);
+
     console.log("================================");
-console.log("CREATE ORDER");
-console.log("Mobile:", customerMobile);
-console.log("Cart Items:", cartItems);
-console.log("================================");
+    console.log("CREATE ORDER");
+    console.log("Mobile:", customerMobile);
+    console.log("Cart Items:", cartItems);
+    console.log("================================");
 
     if (!cartItems.length) {
         return null;
