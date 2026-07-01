@@ -1,12 +1,17 @@
 const { updateConversation } = require("../../services/conversationService");
 const { getProductsPage } = require("../../services/productBrowser");
+const { getCart } = require("../../services/cartService");
+const { cartFlow } = require("./cartFlow");
 async function homeFlow({
     mobile,
     userMessage,
     sendHomeMenu,
     sendProductCatalogue,
     sendProductList,
-    sendWhatsAppMessage
+    sendWhatsAppMessage,
+    sendCartButtons,
+    sendEmptyCartButtons,
+    sendCheckoutButtons
 }) {
 
     if (
@@ -45,13 +50,26 @@ async function homeFlow({
     userMessage === "view_cart"
 ) {
 
-        await sendWhatsAppMessage(
-            mobile,
-            "🛒 Your cart is currently empty."
-        );
+    const items = await getCart(mobile);
 
-        return true;
-    }
+    await updateConversation(mobile, {
+        current_state: "CART"
+    });
+
+    await cartFlow({
+        mobile,
+        userMessage: "",
+        sendWhatsAppMessage,
+        sendHomeMenu,
+        sendProductCatalogue,
+        sendProductList,
+        sendCartButtons,
+        sendEmptyCartButtons,
+        sendCheckoutButtons
+    });
+
+    return true;
+}
 
     if (
     userMessage === "3" ||

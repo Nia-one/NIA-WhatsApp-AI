@@ -9,22 +9,30 @@ async function sendOrderSuccessButtons(
     await sendWhatsAppButtons(
         mobile,
 
-`🎉 *Order Placed Successfully!*
+`🎉 *Thank You for Shopping!*
+
+Your order has been successfully placed.
 
 🧾 Order ID: ${orderId}
 
-💰 Total Paid: ₹${total}
+💰 Order Total: ₹${total}
 
-🚚 Your order has been received and is being processed.
+Thank you for choosing *Nia Essentials*.
 
-Thank you for shopping with *Nia Essentials*! ❤️`,
+💚 We hope to serve you again soon.
+
+Have a wonderful day! 😊`,
 
         [
-    {
-        id: "go_home",
-        title: "Home"
-    }
-]
+            {
+                id: "browse_products",
+                title: "Shop Again"
+            },
+            {
+                id: "go_home",
+                title: "Home"
+            }
+        ]
     );
 
 }
