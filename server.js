@@ -403,14 +403,14 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
 if (state.current_state === "PRODUCT_CATALOGUE") {
 
     await catalogueFlow({
-        mobile,
-        state,
-        userMessage: String(userMessage).trim(),
-        sendHomeMenu,
-        sendProductCatalogue,
-        sendWhatsAppMessage
-    });
-
+    mobile,
+    state,
+    userMessage: String(userMessage).trim(),
+    sendHomeMenu,
+    sendProductCatalogue,
+    sendWhatsAppMessage,
+    sendProductDetailsButtons
+});
     return res.sendStatus(200);
 
 }

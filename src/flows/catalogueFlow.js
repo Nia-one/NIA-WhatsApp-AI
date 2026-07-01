@@ -15,7 +15,8 @@ async function catalogueFlow({
 
     sendHomeMenu,
     sendProductCatalogue,
-    sendWhatsAppMessage
+    sendWhatsAppMessage,
+    sendProductDetailsButtons
 
 }) {
 
@@ -51,21 +52,12 @@ if (userMessage.startsWith("PRODUCT_")) {
         last_product_id: selectedProduct.id
     });
 
-    await sendWhatsAppMessage(
-        mobile,
-`🛍️ *${selectedProduct.product_name}*
+    await sendProductDetailsButtons(
+    mobile,
+    selectedProduct
+);
 
-💰 MRP: ₹${selectedProduct.mrp}
-🔥 NIA Price: ₹${selectedProduct.nia_price}
-🎁 You Save: ₹${selectedProduct.nia_savings}
-
-Reply:
-1️⃣ Add to Cart
-2️⃣ Back
-3️⃣ Home`
-    );
-
-    return true;
+return true;
 }
 
     if (["1", "2", "3", "4", "5"].includes(userMessage)) {
@@ -95,23 +87,12 @@ Reply:
         last_product_id: selectedProduct.id
     });
 
-    await sendWhatsAppMessage(
-        mobile,
-        `🛍️ *${selectedProduct.product_name}*
+    await sendProductDetailsButtons(
+    mobile,
+    selectedProduct
+);
 
-💰 MRP: ₹${selectedProduct.mrp}
-🔥 NIA Price: ₹${selectedProduct.nia_price}
-🎁 You Save: ₹${selectedProduct.nia_savings}
-
-📦 Ready for details view...
-
-Reply:
-1️⃣ Add to Cart
-2️⃣ Back to Catalogue
-3️⃣ Main Menu`
-    );
-
-    return true;
+return true;
 }
 
     // ===============================
