@@ -565,10 +565,9 @@ async function sendProductList(mobile, page) {
 
    id: `PRODUCT_${product.id}`,
 
-    title: product.product_name,
+    title: `${product.product_name} (${product.unit})`,
 
-    description: `${product.unit} • ₹${product.nia_price} • Save ₹${product.nia_savings}`
-
+description: `MRP ₹${product.mrp} • Nia Price ₹${product.nia_price} • Save ₹${product.nia_savings}`
 }));
 await sendWhatsAppList(
     mobile,
