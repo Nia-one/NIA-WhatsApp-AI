@@ -67,7 +67,15 @@ Subtotal: ₹${lineTotal}
     // =========================
     // SEND DEFAULT CART VIEW
     // =========================
-    if (!userMessage) {
+    // =========================
+// SHOW CART AFTER ADD TO CART
+// =========================
+if (
+    !userMessage ||
+    userMessage === "add_to_cart"
+) {
+
+    console.log("Showing cart buttons...");
 
     await sendCartButtons(
         mobile,
