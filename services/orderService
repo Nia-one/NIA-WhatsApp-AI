@@ -8,6 +8,10 @@ const {
 } = require("../utils/logger");
 
 const {
+    updateCustomerAnalytics
+} = require("./customerAnalyticsService");
+
+const {
     getCart,
     clearCart
 } = require("./cartService");
@@ -107,6 +111,30 @@ console.error(orderError);
     })
     .eq("id", order.id);
     // Clear cart
+
+    // ======================================
+// Update Customer Analytics
+// ======================================
+
+const analyticsUpdated =
+    await updateCustomerAnalytics(
+        customer.id,
+        total
+    );
+
+if (analyticsUpdated) {
+
+    logSuccess(
+        "Customer analytics updated"
+    );
+
+} else {
+
+    logError(
+        "Customer analytics update failed"
+    );
+
+}
 // Clear cart
 await clearCart(customerMobile);
 
