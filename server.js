@@ -275,12 +275,11 @@ if (String(userMessage).startsWith("PRODUCT_")) {
     return res.sendStatus(200);
 }
 
-// =======================================
-// GLOBAL - Browse Products
-// =======================================
+// GLOBAL - Browse Products / Back to Products
 
 if (
-    String(userMessage).trim() === "browse_products"
+    String(userMessage).trim() === "browse_products" ||
+    String(userMessage).trim() === "back_to_products"
 ) {
 
     const page = await getProductsPage(1);
@@ -290,7 +289,8 @@ if (
         {
             current_state: "PRODUCT_CATALOGUE",
             current_page: 1,
-            current_product_index: 0
+            current_product_index: 0,
+            last_product_id: null
         }
     );
 
@@ -302,7 +302,6 @@ if (
     return res.sendStatus(200);
 
 }
-
 // =======================================
 // GLOBAL - View Cart
 // =======================================
