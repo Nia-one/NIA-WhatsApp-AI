@@ -8,6 +8,11 @@ const {
 async function createOrder(customerMobile) {
 
     const cartItems = await getCart(customerMobile);
+    console.log("================================");
+console.log("CREATE ORDER");
+console.log("Mobile:", customerMobile);
+console.log("Cart Items:", cartItems);
+console.log("================================");
 
     if (!cartItems.length) {
         return null;

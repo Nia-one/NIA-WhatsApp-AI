@@ -20,6 +20,9 @@ const {
 const {
     sendProductDetailsButtons
 } = require("./services/productDetailsButtons");
+const {
+    sendCartButtons
+} = require("./services/cartButtons");
 
 
 
@@ -420,10 +423,13 @@ if (state.current_state === "CART") {
 
     await cartFlow({
         mobile,
-        userMessage: String(userMessage).trim(),
+        state,
+        userMessage,
         sendWhatsAppMessage,
         sendHomeMenu,
-        sendProductCatalogue
+        sendProductCatalogue,
+        sendProductList,
+        sendCartButtons
     });
 
     return res.sendStatus(200);
@@ -566,8 +572,7 @@ async function sendProductList(mobile, page) {
    id: `PRODUCT_${product.id}`,
 
     title: `${product.product_name} (${product.unit})`,
-
-description: `MRP ₹${product.mrp} • Nia Price ₹${product.nia_price} • Save ₹${product.nia_savings}`
+description: `${product.unit} • Nia ₹${product.nia_price} • Save ₹${product.nia_savings}`
 }));
 await sendWhatsAppList(
     mobile,

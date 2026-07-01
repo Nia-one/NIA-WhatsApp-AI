@@ -16,7 +16,9 @@ async function cartFlow({
     userMessage,
     sendWhatsAppMessage,
     sendHomeMenu,
-    sendProductCatalogue
+    sendProductCatalogue,
+    sendProductList,
+    sendCartButtons
 }) {
 
     const items = await getCart(mobile);
@@ -68,14 +70,22 @@ Subtotal: ₹${lineTotal}
     // SEND DEFAULT CART VIEW
     // =========================
     if (!userMessage) {
-        await sendWhatsAppMessage(mobile, msg);
-        return true;
-    }
+
+    await sendCartButtons(
+        mobile,
+        msg
+    );
+
+    return true;
+}
 
     // =========================
     // CHECKOUT
     // =========================
-    if (userMessage === "1") {
+    if (
+    userMessage === "1" ||
+    userMessage === "checkout"
+) {
 
         await updateConversation(mobile, {
             current_state: "CHECKOUT"
@@ -95,21 +105,30 @@ Subtotal: ₹${lineTotal}
     // =========================
     // CONTINUE SHOPPING
     // =========================
-    if (userMessage === "2") {
+    if (
+    if (
+    userMessage === "2" ||
+    userMessage === "browse_products"
+) {
 
-        await sendProductCatalogue(
-            mobile,
-            await require("../../services/productBrowser")
-                .getProductsPage(1)
-        );
+    const page = await require("../../services/productBrowser")
+        .getProductsPage(1);
 
-        return true;
-    }
+    await sendProductList(
+        mobile,
+        page
+    );
+
+    return true;
+}
 
     // =========================
     // CLEAR CART
     // =========================
-    if (userMessage === "3") {
+    if (
+    userMessage === "3" ||
+    userMessage === "clear_cart"
+) {
 
         await clearCart(mobile);
 

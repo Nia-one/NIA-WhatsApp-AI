@@ -18,6 +18,11 @@ async function checkoutFlow({
     // =========================
 
     if (userMessage === "1") {
+        console.log("================================");
+console.log("CHECKOUT STARTED");
+console.log("Mobile:", mobile);
+console.log("Message:", userMessage);
+console.log("================================");
 
         const result = await createOrder(mobile);
 
