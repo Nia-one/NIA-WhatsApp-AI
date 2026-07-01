@@ -16,7 +16,8 @@ async function catalogueFlow({
     sendHomeMenu,
     sendProductCatalogue,
     sendWhatsAppMessage,
-    sendProductDetailsButtons
+    sendProductDetailsButtons,
+    sendQuantityList
 
 }) {
 
