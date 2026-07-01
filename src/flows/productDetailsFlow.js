@@ -18,6 +18,8 @@ async function productDetailsFlow({
     sendWhatsAppMessage,
     sendHomeMenu,
     sendProductCatalogue,
+    sendProductList,
+    sendCartButtons,
     sendProductDetailsButtons
 }) {
 
@@ -69,7 +71,11 @@ if (
     userMessage: "",
     sendWhatsAppMessage,
     sendHomeMenu,
-    sendProductCatalogue
+    sendProductCatalogue,
+    sendProductList,
+    sendCartButtons,
+    sendEmptyCartButtons,
+sendCheckoutButtons
 });
 
 return true;
@@ -80,7 +86,7 @@ return true;
     // =========================
     if (
     userMessage === "2" ||
-    userMessage === "back_products"
+    userMessage === "back_to_products"
 ) {
 
         await updateConversation(mobile, {
@@ -102,7 +108,7 @@ return true;
     // =========================
     if (
     userMessage === "3" ||
-    userMessage === "home"
+    userMessage === "go_home"
 ) {
 
         await updateConversation(mobile, {
@@ -125,7 +131,7 @@ return true;
 
 return true;
 
-    return true;
+ 
 }
 
 module.exports = {

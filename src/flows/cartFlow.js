@@ -18,23 +18,24 @@ async function cartFlow({
     sendHomeMenu,
     sendProductCatalogue,
     sendProductList,
-    sendCartButtons
+    sendCartButtons,
+    sendEmptyCartButtons,
+    sendCheckoutButtons
 }) {
 
     const items = await getCart(mobile);
 
     // =========================
-    // EMPTY CART
-    // =========================
-    if (!items.length) {
+// EMPTY CART
+// =========================
+if (!items.length) {
 
-        await sendWhatsAppMessage(
-            mobile,
-            "🛒 Your cart is empty.\n\n1️⃣ Continue Shopping\n0️⃣ Home"
-        );
+    await sendEmptyCartButtons(
+        mobile
+    );
 
-        return true;
-    }
+    return true;
+}
 
     // =========================
     // BUILD CART MESSAGE
@@ -59,12 +60,9 @@ Subtotal: ₹${lineTotal}
 `;
     }
 
-    msg += `━━━━━━━━━━━━━━\n\n💰 *Total: ₹${total}*
+    msg += `━━━━━━━━━━━━━━
 
-1️⃣ Checkout
-2️⃣ Continue Shopping
-3️⃣ Clear Cart
-0️⃣ Home`;
+💰 *Total: ₹${total}*`;
 
     // =========================
     // SEND DEFAULT CART VIEW
@@ -87,20 +85,16 @@ Subtotal: ₹${lineTotal}
     userMessage === "checkout"
 ) {
 
-        await updateConversation(mobile, {
-            current_state: "CHECKOUT"
-        });
+    await updateConversation(mobile, {
+        current_state: "CHECKOUT"
+    });
 
-        await sendWhatsAppMessage(
-            mobile,
-`💳 *Checkout*
+    await sendCheckoutButtons(
+        mobile
+    );
 
-1️⃣ Confirm Order
-2️⃣ Cancel & Go Home`
-        );
-
-        return true;
-    }
+    return true;
+}
 
     // =========================
     // CONTINUE SHOPPING

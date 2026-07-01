@@ -6,11 +6,21 @@ const axios = require("axios");
 const supabase = require("./config/supabase");
 
 // NEW IMPORT
-const { homeFlow } = require("./src/flows/homeFlow");
-const { catalogueFlow } = require("./src/flows/catalogueFlow");
-const { productDetailsFlow } = require("./src/flows/productDetailsFlow");
-const { cartFlow } = require("./src/flows/cartFlow");
-const { checkoutFlow } = require("./src/flows/checkoutFlow.js");
+const { 
+    homeFlow 
+} = require("./src/flows/homeFlow");
+const { 
+    catalogueFlow 
+} = require("./src/flows/catalogueFlow");
+const { 
+    productDetailsFlow 
+} = require("./src/flows/productDetailsFlow");
+const { 
+    cartFlow 
+} = require("./src/flows/cartFlow");
+const { 
+    checkoutFlow 
+} = require("./src/flows/checkoutFlow");
 const {
     sendWhatsAppButtons
 } = require("./services/whatsappButtons");
@@ -23,10 +33,20 @@ const {
 const {
     sendCartButtons
 } = require("./services/cartButtons");
+const {
+    sendCheckoutButtons
+} = require("./services/checkoutButtons");
 
+const {
+    sendEmptyCartButtons
+} = require("./services/emptyCartButtons");
 
-
-const { getProducts } = require("./services/productService");
+const {
+    sendOrderSuccessButtons
+} = require("./services/orderSuccessButtons");
+const { 
+    getProducts 
+} = require("./services/productService");
 
 const {
     getConversationState,
@@ -408,6 +428,8 @@ if (state.current_state === "PRODUCT_DETAILS") {
     sendWhatsAppMessage,
     sendHomeMenu,
     sendProductCatalogue,
+    sendProductList,
+    sendCartButtons,
     sendProductDetailsButtons
 });
 
@@ -422,15 +444,17 @@ if (state.current_state === "PRODUCT_DETAILS") {
 if (state.current_state === "CART") {
 
     await cartFlow({
-        mobile,
-        state,
-        userMessage,
-        sendWhatsAppMessage,
-        sendHomeMenu,
-        sendProductCatalogue,
-        sendProductList,
-        sendCartButtons
-    });
+    mobile,
+    state,
+    userMessage,
+    sendWhatsAppMessage,
+    sendHomeMenu,
+    sendProductCatalogue,
+    sendProductList,
+    sendCartButtons,
+    sendEmptyCartButtons,
+    sendCheckoutButtons
+});
 
     return res.sendStatus(200);
 
@@ -443,11 +467,14 @@ if (state.current_state === "CART") {
 if (state.current_state === "CHECKOUT") {
 
     await checkoutFlow({
-        mobile,
-        userMessage: String(userMessage).trim(),
-        sendWhatsAppMessage,
-        sendHomeMenu
-    });
+    mobile,
+    userMessage,
+    sendWhatsAppMessage,
+    sendHomeMenu,
+    sendCheckoutButtons,
+    sendEmptyCartButtons,
+    sendOrderSuccessButtons
+});
 
     return res.sendStatus(200);
 
@@ -503,7 +530,7 @@ async function sendInvalidMenu(mobile) {
         mobile,
 `🤔 *I didn't quite understand that.*
 
-👋 *Welcome to NIA Essentials!*
+👋 *Welcome to Nia Essentials!*
 
 Please choose one of the following options:
 

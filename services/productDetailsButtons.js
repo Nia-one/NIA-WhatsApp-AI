@@ -7,8 +7,10 @@ async function sendProductDetailsButtons(mobile, product) {
 
 `🛍 *${product.product_name}*
 
+📦 Unit: ${product.unit}
+
 💰 MRP: ₹${product.mrp}
-🔥 NIA Price: ₹${product.nia_price}
+🔥 Nia Price: ₹${product.nia_price}
 🎁 You Save: ₹${product.nia_savings}`,
 
         [
@@ -16,21 +18,21 @@ async function sendProductDetailsButtons(mobile, product) {
                 type: "reply",
                 reply: {
                     id: "add_to_cart",
-                    title: "Add to Cart"
+                    title: "🛒 Add to Cart"
                 }
             },
             {
                 type: "reply",
                 reply: {
-                    id: "back_products",
-                    title: "Back"
+                    id: "back_to_products",
+                    title: "⬅️ Back"
                 }
             },
             {
                 type: "reply",
                 reply: {
-                    id: "home",
-                    title: "Home"
+                    id: "go_home",
+                    title: "🏠 Home"
                 }
             }
         ]

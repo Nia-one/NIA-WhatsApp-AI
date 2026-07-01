@@ -10,14 +10,19 @@ async function checkoutFlow({
     mobile,
     userMessage,
     sendWhatsAppMessage,
-    sendHomeMenu
+    sendHomeMenu,
+    sendCheckoutButtons,
+    sendOrderSuccessButtons,
+    sendEmptyCartButtons
 }) {
-
     // =========================
     // Confirm Order
     // =========================
 
-    if (userMessage === "1") {
+    if (
+    userMessage === "1" ||
+    userMessage === "confirm_order"
+) {
         console.log("================================");
 console.log("CHECKOUT STARTED");
 console.log("Mobile:", mobile);
@@ -28,41 +33,36 @@ console.log("================================");
 
         if (!result) {
 
-            await sendWhatsAppMessage(
-                mobile,
-                "🛒 Your cart is empty. Add items before checkout."
-            );
+            await sendEmptyCartButtons(
+    mobile
+);
 
-            return true;
+return true;
+
+            
         }
 
-        await sendWhatsAppMessage(
-            mobile,
-`🎉 *Order Placed Successfully!*
+        await sendOrderSuccessButtons(
+    mobile,
+    result.orderId,
+    result.total
+);
 
-🧾 Order ID: ${result.orderId}
+await updateConversation(mobile, {
+    current_state: "HOME"
+});
 
-💰 Total Paid: ₹${result.total}
-
-🚚 Your order is being processed.
-
-Thank you for shopping with NIA Essentials! 🙌`
-        );
-
-        await updateConversation(mobile, {
-            current_state: "HOME"
-        });
-
-        await sendHomeMenu(mobile);
-
-        return true;
+return true;
     }
 
     // =========================
     // Cancel & Go Home
     // =========================
 
-    if (userMessage === "2") {
+    if (
+    userMessage === "2" ||
+    userMessage === "cancel_order"
+) {
 
         await updateConversation(mobile, {
             current_state: "HOME"
@@ -77,13 +77,9 @@ Thank you for shopping with NIA Essentials! 🙌`
     // Default Checkout Screen
     // =========================
 
-    await sendWhatsAppMessage(
-        mobile,
-`💳 *Checkout*
-
-1️⃣ Confirm Order
-2️⃣ Cancel & Go Home`
-    );
+    await sendCheckoutButtons(
+    mobile
+);
 
     return true;
 }
