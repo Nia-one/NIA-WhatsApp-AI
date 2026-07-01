@@ -43,14 +43,23 @@ console.log("Customer Details:", customer);
     let total = 0;
 
     // Create Order
-    const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-            customer_mobile: customerMobile,
-            total_amount: 0
-        })
-        .select()
-        .single();
+const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .insert({
+        order_number: `ORD-${Date.now()}`,
+        customer_id: customer.id,
+        guest_id: guest.id,
+        studio_id: customer.studio_id || null,
+
+        subtotal: 0,
+        grand_total: 0,
+
+        payment_mode: "COD",
+        payment_status: "Pending",
+        order_status: "Pending"
+    })
+    .select()
+    .single();
 
     if (orderError) {
         console.error(orderError);
@@ -73,12 +82,12 @@ console.log("Customer Details:", customer);
 
     // Update total
     await supabase
-        .from("orders")
-        .update({
-            total_amount: total
-        })
-        .eq("id", order.id);
-
+    .from("orders")
+    .update({
+        subtotal: total,
+        grand_total: total
+    })
+    .eq("id", order.id);
     // Clear cart
     await clearCart(customerMobile);
 
