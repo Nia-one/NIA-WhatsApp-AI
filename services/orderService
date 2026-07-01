@@ -1,6 +1,13 @@
 const supabase = require("../config/supabase");
 
 const {
+    logSection,
+    logInfo,
+    logSuccess,
+    logError
+} = require("../utils/logger");
+
+const {
     getCart,
     clearCart
 } = require("./cartService");
@@ -30,11 +37,12 @@ console.log("Customer Details:", customer);
 
     const cartItems = await getCart(customerMobile);
 
-    console.log("================================");
-    console.log("CREATE ORDER");
-    console.log("Mobile:", customerMobile);
-    console.log("Cart Items:", cartItems);
-    console.log("================================");
+    logSection("CREATE ORDER");
+
+logInfo("Mobile", customerMobile);
+logInfo("Cart Items", cartItems.length);
+logInfo("Guest ID", guest.id);
+logInfo("Customer ID", customer.id);
 
     if (!cartItems.length) {
         return null;
@@ -61,8 +69,18 @@ const { data: order, error: orderError } = await supabase
     .select()
     .single();
 
+    if (!orderError) {
+
+    logSuccess("Order created successfully");
+
+    logInfo("Order ID", order.id);
+    logInfo("Order Number", order.order_number);
+
+}
+
     if (orderError) {
-        console.error(orderError);
+        logError("Order creation failed");
+console.error(orderError);
         return null;
     }
 
@@ -89,9 +107,24 @@ const { data: order, error: orderError } = await supabase
     })
     .eq("id", order.id);
     // Clear cart
-    await clearCart(customerMobile);
+// Clear cart
+await clearCart(customerMobile);
 
-    return {
+// ================================
+// ORDER SUMMARY
+// ================================
+
+logSection("ORDER COMPLETED");
+
+logInfo("Order Number", order.order_number);
+logInfo("Customer", customer.mobile_number);
+logInfo("Items", cartItems.length);
+logInfo("Grand Total", `₹${total}`);
+
+logSuccess("Cart cleared");
+logSuccess("Order completed successfully");
+
+return {
     orderId: order.order_number,
     total
 };
