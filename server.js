@@ -17,6 +17,9 @@ const {
 const {
     sendWhatsAppList
 } = require("./services/whatsappList");
+const {
+    sendProductDetailsButtons
+} = require("./services/productDetailsButtons");
 
 
 
@@ -396,13 +399,14 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
 if (state.current_state === "PRODUCT_DETAILS") {
 
     await productDetailsFlow({
-        mobile,
-        state,
-        userMessage: String(userMessage).trim(),
-        sendWhatsAppMessage,
-        sendHomeMenu,
-        sendProductCatalogue
-    });
+    mobile,
+    state,
+    userMessage,
+    sendWhatsAppMessage,
+    sendHomeMenu,
+    sendProductCatalogue,
+    sendProductDetailsButtons
+});
 
     return res.sendStatus(200);
 

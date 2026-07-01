@@ -17,7 +17,8 @@ async function productDetailsFlow({
     userMessage,
     sendWhatsAppMessage,
     sendHomeMenu,
-    sendProductCatalogue
+    sendProductCatalogue,
+    sendProductDetailsButtons
 }) {
 
     const product = await getProductById(
@@ -35,7 +36,10 @@ async function productDetailsFlow({
 // Add to Cart
 // =========================
 
-if (userMessage === "1") {
+if (
+    userMessage === "1" ||
+    userMessage === "add_to_cart"
+) {
 
     const added = await addToCart(
         mobile,
@@ -74,7 +78,10 @@ return true;
     // =========================
     // Back to Catalogue
     // =========================
-    if (userMessage === "2") {
+    if (
+    userMessage === "2" ||
+    userMessage === "back_products"
+) {
 
         await updateConversation(mobile, {
             current_state: "PRODUCT_CATALOGUE"
@@ -93,7 +100,10 @@ return true;
     // =========================
     // Main Menu
     // =========================
-    if (userMessage === "3") {
+    if (
+    userMessage === "3" ||
+    userMessage === "home"
+) {
 
         await updateConversation(mobile, {
             current_state: "HOME"
@@ -108,16 +118,12 @@ return true;
     // Default - Show Product Again
     // =========================
 
-    await sendWhatsAppMessage(
-        mobile,
-        `🛍️ *${product.product_name}*
+    await sendProductDetailsButtons(
+    mobile,
+    product
+);
 
-💰 ₹${product.nia_price}
-
-1️⃣ Add to Cart
-2️⃣ Back
-3️⃣ Home`
-    );
+return true;
 
     return true;
 }
