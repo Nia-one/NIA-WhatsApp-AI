@@ -23,6 +23,51 @@ async function catalogueFlow({
     // Product Selection
     // ===============================
 
+    // ===============================
+// Product Selected from WhatsApp List
+// ===============================
+
+if (userMessage.startsWith("PRODUCT_")) {
+
+    const productId = userMessage.replace("PRODUCT_", "");
+
+    const { getProductById } = require("../../services/productService");
+
+    const selectedProduct = await getProductById(productId);
+
+    if (!selectedProduct) {
+
+        await sendWhatsAppMessage(
+            mobile,
+            "❌ Product not found."
+        );
+
+        return true;
+
+    }
+
+    await updateConversation(mobile, {
+        current_state: "PRODUCT_DETAILS",
+        last_product_id: selectedProduct.id
+    });
+
+    await sendWhatsAppMessage(
+        mobile,
+`🛍️ *${selectedProduct.product_name}*
+
+💰 MRP: ₹${selectedProduct.mrp}
+🔥 NIA Price: ₹${selectedProduct.nia_price}
+🎁 You Save: ₹${selectedProduct.nia_savings}
+
+Reply:
+1️⃣ Add to Cart
+2️⃣ Back
+3️⃣ Home`
+    );
+
+    return true;
+}
+
     if (["1", "2", "3", "4", "5"].includes(userMessage)) {
 
     const pageSize = 5;

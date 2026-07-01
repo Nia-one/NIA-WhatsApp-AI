@@ -14,6 +14,9 @@ const { checkoutFlow } = require("./src/flows/checkoutFlow.js");
 const {
     sendWhatsAppButtons
 } = require("./services/whatsappButtons");
+const {
+    sendWhatsAppList
+} = require("./services/whatsappList");
 
 
 
@@ -85,7 +88,12 @@ app.post("/webhook", async (req, res) => {
         }
 
 const mobile = message.from;
-const userMessage = (message.text?.body || "").trim();
+const userMessage = (
+    message.text?.body ||
+    message.interactive?.button_reply?.id ||
+    message.interactive?.list_reply?.id ||
+    ""
+).trim();
 
 let state = await getConversationState(mobile);
 const command = userMessage.toLowerCase().trim();
@@ -117,7 +125,7 @@ if (
 }
 
 console.log("========== DEBUG ==========");
-console.log("Raw:", message.text?.body);
+console.log("Raw Message:", JSON.stringify(message, null, 2));
 console.log("Processed:", JSON.stringify(userMessage));
 console.log("State:", state?.current_state || "NEW");
 console.log("===========================");
@@ -462,11 +470,11 @@ We're delighted to have you here. 😊
         [
     {
         id: "browse_products",
-        title: "Shop"
+        title: "Shop Now"
     },
     {
         id: "view_cart",
-        title: "Cart"
+        title: "View Cart"
     },
     {
         id: "checkout",
@@ -544,6 +552,30 @@ async function sendProductCatalogue(
         msg
     );
 
+}
+
+async function sendProductList(mobile, page) {
+
+   const rows = page.products.map(product => ({
+
+   id: `PRODUCT_${product.id}`,
+
+    title: product.product_name,
+
+    description: `₹${product.nia_price} • Save ₹${product.nia_savings}`
+
+}));
+await sendWhatsAppList(
+    mobile,
+    "🛍 *Choose a product from the list below:*",
+    "View Products",
+    [
+        {
+            title: "NIA Essentials",
+            rows: rows
+        }
+    ]
+);
 }
 
 async function sendWhatsAppMessage(to, message) {

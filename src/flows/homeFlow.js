@@ -5,6 +5,7 @@ async function homeFlow({
     userMessage,
     sendHomeMenu,
     sendProductCatalogue,
+    sendProductList,
     sendWhatsAppMessage
 }) {
 
@@ -31,7 +32,7 @@ async function homeFlow({
             current_product_index: 0
         });
 
-        await sendProductCatalogue(
+        await sendProductList(
             mobile,
             page
         );
