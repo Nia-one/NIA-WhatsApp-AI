@@ -181,7 +181,10 @@ return true;
     // Main Menu
     // ===============================
 
-    if (userMessage === "0") {
+    if (
+    userMessage === "0" ||
+    userMessage === "go_home"
+) {
 
         await updateConversation(
             mobile,
