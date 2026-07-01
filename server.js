@@ -177,6 +177,9 @@ if (!state) {
     
 console.log("Current State =", state.current_state);
 console.log("User Message =", JSON.stringify(userMessage));
+console.log(
+    `FLOW: ${state.current_state} --> ${String(userMessage).trim()}`
+);
 // HOME MENU
 /*
 if (state.current_state === "HOME") {
