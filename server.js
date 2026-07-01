@@ -243,6 +243,27 @@ if (state.current_state === "HOME") {
 return res.sendStatus(200);
 }   // End HOME block
 */
+
+// =======================================
+// GLOBAL ROUTING
+// =======================================
+
+// Product selected from WhatsApp List
+if (String(userMessage).startsWith("PRODUCT_")) {
+
+    await catalogueFlow({
+        mobile,
+        state,
+        userMessage: String(userMessage).trim(),
+        sendHomeMenu,
+        sendProductCatalogue,
+        sendWhatsAppMessage,
+        sendProductDetailsButtons
+    });
+
+    return res.sendStatus(200);
+}
+
 // =======================================
 // HOME
 // =======================================
