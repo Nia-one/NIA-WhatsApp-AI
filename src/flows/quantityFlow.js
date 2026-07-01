@@ -30,21 +30,26 @@ async function quantityFlow({
             state.last_product_id
         );
 
-        await updateConversation(
-            mobile,
-            {
-                current_state: "PRODUCT_DETAILS",
-                selected_quantity: qty
-            }
-        );
+        const result = await updateConversation(
+    mobile,
+    {
+        current_state: "PRODUCT_DETAILS",
+        selected_quantity: qty
+    }
+);
 
-        await sendProductDetailsButtons(
-            mobile,
-            product,
-            qty
-        );
+console.log("UPDATE RESULT:", result);
 
-        return;
+const newState = await getConversationState(mobile);
+console.log("STATE AFTER UPDATE:", newState);
+
+await sendProductDetailsButtons(
+    mobile,
+    product,
+    qty
+);
+
+return; 
     }
 
     await sendQuantityList(mobile);
