@@ -32,13 +32,22 @@ async function saveConversationState(mobile, state) {
 }
 async function updateConversation(mobile, values) {
 
+    console.log("================================");
+    console.log("Updating Conversation State");
+    console.log("Mobile:", mobile);
+    console.log("Values:", values);
+    console.log("================================");
+
     const { data, error } = await supabase
         .from("conversation_state")
         .update(values)
         .eq("customer_mobile", mobile);
 
-    return { data, error };
+    if (error) {
+        console.log("Update Error:", error);
+    }
 
+    return { data, error };
 }
 
 async function resetConversation(mobile) {
