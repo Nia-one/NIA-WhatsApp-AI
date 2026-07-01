@@ -18,7 +18,9 @@ const {
 const { 
     cartFlow 
 } = require("./src/flows/cartFlow");
-const quantityFlow = require("./src/flows/quantityFlow");
+const {
+    quantityFlow
+} = require("./src/flows/quantityFlow");
 const { 
     checkoutFlow 
 } = require("./src/flows/checkoutFlow");
@@ -785,10 +787,9 @@ async function sendQuantityList(mobile) {
     for (let i = 1; i <= 10; i++) {
 
         rows.push({
-            id: `QTY_${i}`,
-            title: `${i}`,
-            description: `Quantity ${i}`
-        });
+    id: `QTY_${i}`,
+    title: `Qty ${i}`
+});
 
     }
 
