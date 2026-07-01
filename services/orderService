@@ -8,6 +8,10 @@ const {
 } = require("../utils/logger");
 
 const {
+    addOrderTimeline
+} = require("./orderTimelineService");
+
+const {
     generateOrderNumber
 } = require("./orderNumberService");
 
@@ -84,6 +88,27 @@ const { data: order, error: orderError } = await supabase
 
     logInfo("Order ID", order.id);
     logInfo("Order Number", order.order_number);
+
+}
+
+// ======================================
+// Create Order Timeline
+// ======================================
+
+const timelineCreated = await addOrderTimeline(
+    order.id,
+    "Order Placed",
+    "Order successfully created",
+    "System"
+);
+
+if (timelineCreated) {
+
+    logSuccess("Order timeline created");
+
+} else {
+
+    logError("Order timeline creation failed");
 
 }
 
