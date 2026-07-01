@@ -293,6 +293,89 @@ if (
 }
 
 // =======================================
+// GLOBAL - View Cart
+// =======================================
+
+if (
+    String(userMessage).trim() === "view_cart"
+) {
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "CART"
+        }
+    );
+
+    await cartFlow({
+        mobile,
+        userMessage: "",
+        sendWhatsAppMessage,
+        sendHomeMenu,
+        sendProductCatalogue,
+        sendProductList,
+        sendCartButtons,
+        sendEmptyCartButtons,
+        sendCheckoutButtons
+    });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
+// GLOBAL - Checkout
+// =======================================
+
+if (
+    String(userMessage).trim() === "checkout"
+) {
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "CHECKOUT"
+        }
+    );
+
+    await checkoutFlow({
+        mobile,
+        userMessage: "",
+        sendWhatsAppMessage,
+        sendHomeMenu,
+        sendCheckoutButtons,
+        sendEmptyCartButtons,
+        sendOrderSuccessButtons
+    });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
+// GLOBAL - Home
+// =======================================
+
+if (
+    String(userMessage).trim() === "go_home"
+) {
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "HOME"
+        }
+    );
+
+    await sendHomeMenu(
+        mobile
+    );
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
 // HOME
 // =======================================
 
