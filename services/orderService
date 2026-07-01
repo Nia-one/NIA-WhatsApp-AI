@@ -6,7 +6,8 @@ const {
 } = require("./cartService");
 
 const {
-    getOrCreateGuest
+    getOrCreateGuest,
+    getOrCreateCustomer
 } = require("./customerService");
 
 async function createOrder(customerMobile) {
@@ -18,6 +19,14 @@ async function createOrder(customerMobile) {
     const guest = await getOrCreateGuest(customerMobile);
 
     console.log("Guest Details:", guest);
+
+    // ======================================
+// Get or Create Customer
+// ======================================
+
+const customer = await getOrCreateCustomer(guest);
+
+console.log("Customer Details:", customer);
 
     const cartItems = await getCart(customerMobile);
 
