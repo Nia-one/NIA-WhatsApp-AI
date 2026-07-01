@@ -218,16 +218,17 @@ return res.sendStatus(200);
 // HOME
 // =======================================
 
+
 if (state.current_state === "HOME") {
 
-    await homeFlow({
-        mobile,
-        userMessage: String(userMessage).trim(),
-        sendHomeMenu,
-        sendProductCatalogue,
-        sendWhatsAppMessage
-    });
-
+await homeFlow({
+    mobile,
+    userMessage: String(userMessage).trim(),
+    sendHomeMenu,
+    sendProductCatalogue,
+    sendProductList,
+    sendWhatsAppMessage
+});
     return res.sendStatus(200);
 
 }
