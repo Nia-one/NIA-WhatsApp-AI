@@ -4,8 +4,7 @@ const supabase = require("../config/supabase");
 // Add Product to Cart
 // ==========================================
 
-async function addToCart(customerMobile, product) {
-
+async function addToCart(customerMobile, product, quantity) {
     // Check if product already exists
     const { data: existing, error } = await supabase
         .from("cart")
@@ -25,7 +24,7 @@ async function addToCart(customerMobile, product) {
         const { error: updateError } = await supabase
             .from("cart")
             .update({
-                quantity: existing.quantity + 1,
+                quantity: existing.quantity + quantity,
                 updated_at: new Date().toISOString()
             })
             .eq("id", existing.id);
@@ -44,7 +43,7 @@ async function addToCart(customerMobile, product) {
         .insert({
             customer_mobile: customerMobile,
             product_id: product.id,
-            quantity: 1,
+            quantity: quantity,
             price: product.nia_price
         });
 

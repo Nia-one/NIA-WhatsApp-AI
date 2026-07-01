@@ -124,7 +124,11 @@ const userMessage = (
     ""
 ).trim();
 
+
 let state = await getConversationState(mobile);
+
+
+
 const command = userMessage.toLowerCase().trim();
 
 if (
@@ -177,6 +181,8 @@ if (!state) {
     return res.sendStatus(200);
 
 }
+
+
     
 console.log("Current State =", state.current_state);
 console.log("User Message =", JSON.stringify(userMessage));
@@ -262,6 +268,7 @@ if (String(userMessage).startsWith("PRODUCT_")) {
         sendProductCatalogue,
         sendWhatsAppMessage,
         sendProductDetailsButtons,
+        sendProductList,
         sendQuantityList
     });
 
@@ -556,6 +563,7 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
     sendProductCatalogue,
     sendWhatsAppMessage,
     sendProductDetailsButtons,
+    sendProductList,
     sendQuantityList
 });
     return res.sendStatus(200);
@@ -783,6 +791,11 @@ await sendWhatsAppList(
 }
 
 async function sendQuantityList(mobile) {
+
+    console.log("=================================");
+console.log("sendQuantityList() CALLED");
+console.trace();
+console.log("=================================");
 
     const rows = [];
 

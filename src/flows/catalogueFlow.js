@@ -15,12 +15,12 @@ async function catalogueFlow({
 
     sendHomeMenu,
     sendProductCatalogue,
+    sendProductList,
     sendWhatsAppMessage,
     sendProductDetailsButtons,
     sendQuantityList
 
 }) {
-
     // ===============================
     // Product Selection
     // ===============================
@@ -30,6 +30,12 @@ async function catalogueFlow({
 // ===============================
 
 if (userMessage.startsWith("PRODUCT_")) {
+
+    console.log("=================================");
+console.log("PRODUCT_ selected");
+console.log("Product ID:", userMessage);
+console.trace();
+console.log("=================================");
 
     const productId = userMessage.replace("PRODUCT_", "");
 
@@ -138,10 +144,10 @@ return true;
             }
         );
 
-        await sendProductCatalogue(
-            mobile,
-            nextPage
-        );
+        await sendProductList(
+    mobile,
+    nextPage
+);
 
         return true;
 
@@ -206,13 +212,12 @@ return true;
 
     const page = await getProductsPage(1);
 
-    await sendProductCatalogue(
-        mobile,
-        page
-    );
+await sendProductList(
+    mobile,
+    page
+);
 
-    return true;
-
+return true;
 }
 
 module.exports = {

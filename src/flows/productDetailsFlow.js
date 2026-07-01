@@ -45,10 +45,13 @@ if (
     userMessage === "add_to_cart"
 ) {
 
+    console.log("STATE IN PRODUCT DETAILS:", state);
+console.log("SELECTED QTY:", state.selected_quantity);
     const added = await addToCart(
-        mobile,
-        product
-    );
+    mobile,
+    product,
+    state.selected_quantity
+);
 
     if (!added) {
 
@@ -95,12 +98,14 @@ return true;
             current_state: "PRODUCT_CATALOGUE"
         });
 
-        await sendProductCatalogue(
-            mobile,
-            await require("../../services/productBrowser").getProductsPage(
-                state.current_page || 1
-            )
-        );
+        const page = await require("../../services/productBrowser").getProductsPage(
+    state.current_page || 1
+);
+
+await sendProductList(
+    mobile,
+    page
+);
 
         return true;
     }
