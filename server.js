@@ -594,7 +594,9 @@ if (state.current_state === "PRODUCT_DETAILS") {
     sendProductCatalogue,
     sendProductList,
     sendCartButtons,
-    sendProductDetailsButtons
+    sendProductDetailsButtons,
+    sendEmptyCartButtons,
+    sendCheckoutButtons
 });
 
     return res.sendStatus(200);

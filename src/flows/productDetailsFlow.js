@@ -20,7 +20,9 @@ async function productDetailsFlow({
     sendProductCatalogue,
     sendProductList,
     sendCartButtons,
-    sendProductDetailsButtons
+    sendProductDetailsButtons,
+    sendEmptyCartButtons,
+    sendCheckoutButtons
 }) {
 
     const product = await getProductById(
