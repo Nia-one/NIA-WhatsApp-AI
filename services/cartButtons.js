@@ -1,7 +1,7 @@
 const { sendWhatsAppButtons } = require("./whatsappButtons");
 
 async function sendCartButtons(mobile, cartText) {
-
+console.log("===== SENDING CART BUTTONS =====");
     await sendWhatsAppButtons(
         mobile,
         cartText,

@@ -3,7 +3,8 @@ const axios = require("axios");
 async function sendWhatsAppButtons(to, body, buttons) {
 
     try {
-
+        console.log("Buttons Payload:");
+console.log(JSON.stringify(buttons, null, 2));
         const response = await axios.post(
             `https://graph.facebook.com/v23.0/${process.env.PHONE_NUMBER_ID}/messages`,
             {
