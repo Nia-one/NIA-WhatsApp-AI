@@ -1,5 +1,5 @@
-const { updateConversation } = require("../services/conversationService");
-const { getProductById } = require("../services/productService");
+const { updateConversation, getConversation } = require("../../services/conversationService");
+const { getProductById } = require("../../services/productService");
 
 async function quantityFlow({
     mobile,
@@ -20,8 +20,7 @@ async function quantityFlow({
             userMessage.replace("QTY_", "")
         );
 
-        const state = await require("../services/conversationService")
-            .getConversation(mobile);
+        const state = await getConversation(mobile);
 
         const product = await getProductById(
             state.last_product_id
