@@ -542,6 +542,9 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
 
 if (state.current_state === "PRODUCT_CATALOGUE") {
 
+ console.log("typeof sendQuantityList =", typeof sendQuantityList);
+    console.log(sendQuantityList);
+
     await catalogueFlow({
     mobile,
     state,
