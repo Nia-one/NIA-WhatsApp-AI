@@ -460,28 +460,19 @@ We're delighted to have you here. 😊
 *How may I assist you today?*`,
 
         [
-            {
-                type: "reply",
-                reply: {
-                    id: "1",
-                    title: "🛍 Shop"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "2",
-                    title: "🛒 Cart"
-                }
-            },
-            {
-                type: "reply",
-                reply: {
-                    id: "3",
-                    title: "💳 Checkout"
-                }
-            }
-        ]
+    {
+        id: "browse_products",
+        title: "Shop"
+    },
+    {
+        id: "view_cart",
+        title: "Cart"
+    },
+    {
+        id: "checkout",
+        title: "Checkout"
+    }
+]
     );
 
 }

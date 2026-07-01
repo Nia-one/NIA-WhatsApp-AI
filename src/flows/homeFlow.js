@@ -8,7 +8,10 @@ async function homeFlow({
     sendWhatsAppMessage
 }) {
 
-    if (userMessage === "1") {
+    if (
+    userMessage === "1" ||
+    userMessage === "browse_products"
+) {
 
         const page = await getProductsPage(1);
 
@@ -36,7 +39,10 @@ async function homeFlow({
         return true;
     }
 
-    if (userMessage === "2") {
+    if (
+    userMessage === "2" ||
+    userMessage === "view_cart"
+) {
 
         await sendWhatsAppMessage(
             mobile,
@@ -46,7 +52,10 @@ async function homeFlow({
         return true;
     }
 
-    if (userMessage === "3") {
+    if (
+    userMessage === "3" ||
+    userMessage === "checkout"
+) {
 
     await updateConversation(mobile, {
         current_state: "CHECKOUT"

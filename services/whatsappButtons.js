@@ -8,8 +8,7 @@ async function sendWhatsAppButtons(to, body, buttons) {
             `https://graph.facebook.com/v23.0/${process.env.PHONE_NUMBER_ID}/messages`,
             {
                 messaging_product: "whatsapp",
-                recipient_type: "individual",
-                to: to,
+                to,
                 type: "interactive",
                 interactive: {
                     type: "button",
@@ -17,7 +16,13 @@ async function sendWhatsAppButtons(to, body, buttons) {
                         text: body
                     },
                     action: {
-                        buttons: buttons
+                        buttons: buttons.map(button => ({
+                            type: "reply",
+                            reply: {
+                                id: button.id,
+                                title: button.title
+                            }
+                        }))
                     }
                 }
             },
