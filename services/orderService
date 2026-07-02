@@ -265,7 +265,7 @@ logInfo("Customer", customer.mobile_number);
 logInfo("Items", cartItems.length);
 logInfo("Grand Total", `₹${total}`);
 
-logSuccess("Cart cleared");
+
 logSuccess("Order completed successfully");
 
 return {
