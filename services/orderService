@@ -190,7 +190,7 @@ console.error(orderError);
 
             
         );
-        throw new Error("Inventory Rollback Test");
+       
     }
 
     // ======================================
