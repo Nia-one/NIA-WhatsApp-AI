@@ -133,13 +133,22 @@ console.error(orderError);
 
     total += item.price * item.quantity;
 
-    const { error: itemError } = await supabase
+    const product = await supabase
+    .from("product_master")
+    .select("product_code, product_name")
+    .eq("id", item.product_id)
+    .single();
+
+const { error: itemError } = await supabase
     .from("order_items")
     .insert({
         order_id: order.id,
         product_id: item.product_id,
+        product_code: product.data.product_code,
+        product_name: product.data.product_name,
         quantity: item.quantity,
-        price: item.price
+        unit_price: item.price,
+        total_price: item.price * item.quantity
     });
 
 if (itemError) {
