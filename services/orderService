@@ -3,6 +3,9 @@ const supabase = require("../config/supabase");
 console.log("LOADED ORDER SERVICE:", __filename);
 
 const {
+    rollbackOrder
+} = require("./rollbackService");
+const {
     logSection,
     logInfo,
     logSuccess,
@@ -124,110 +127,130 @@ console.error(orderError);
         return null;
     }
 
+   try {
+
+    // ======================================
     // Insert Order Items
+    // ======================================
+
     for (const item of cartItems) {
 
-         console.log("Saving Order Item...");
-    console.log(item);
+        console.log("Saving Order Item...");
+        console.log(item);
 
+        total += item.price * item.quantity;
 
-    total += item.price * item.quantity;
+        const product = await supabase
+            .from("product_master")
+            .select("product_code, product_name")
+            .eq("id", item.product_id)
+            .single();
 
-    const product = await supabase
-    .from("product_master")
-    .select("product_code, product_name")
-    .eq("id", item.product_id)
-    .single();
+        if (product.error) {
+            throw product.error;
+        }
 
-const { error: itemError } = await supabase
-    .from("order_items")
-    .insert({
-        order_id: order.id,
-        product_id: item.product_id,
-        product_code: product.data.product_code,
-        product_name: product.data.product_name,
-        quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity
-    });
+        const { error: itemError } = await supabase
+            .from("order_items")
+            .insert({
+                order_id: order.id,
+                product_id: item.product_id,
+                product_code: product.data.product_code,
+                product_name: product.data.product_name,
+                quantity: item.quantity,
+                unit_price: item.price,
+                total_price: item.price * item.quantity
+            });
 
-if (itemError) {
+        if (itemError) {
+            throw itemError;
+        }
 
-    console.log("================================");
-    console.log("ORDER ITEM ERROR");
-    console.log("================================");
+        console.log("================================");
+        console.log("ORDER ITEM INSERTED");
+        console.log("================================");
 
-    console.error(itemError);
+        const inventoryUpdated = await reduceInventory(
+            item.product_id,
+            item.quantity
+        );
 
-} else {
-
-    console.log("================================");
-    console.log("ORDER ITEM INSERTED");
-    console.log("================================");
-
-    console.log(item.product_id);
-
-}
-    // ======================================
-    // Reduce Inventory
-    // ======================================
-
-    const inventoryUpdated = await reduceInventory(
-        item.product_id,
-        item.quantity
-    );
-
-    if (inventoryUpdated) {
+        if (!inventoryUpdated) {
+            throw new Error(
+                `Inventory update failed for ${item.product_id}`
+            );
+        }
 
         logSuccess(
             `Inventory updated for ${item.product_id}`
         );
-
-    } else {
-
-        logError(
-            `Inventory update failed for ${item.product_id}`
-        );
-
     }
 
-}
+    // ======================================
+    // Update Order Total
+    // ======================================
 
-    // Update total
-    await supabase
-    .from("orders")
-    .update({
-        subtotal: total,
-        grand_total: total
-    })
-    .eq("id", order.id);
-    // Clear cart
+    const { error: totalError } = await supabase
+        .from("orders")
+        .update({
+            subtotal: total,
+            grand_total: total
+        })
+        .eq("id", order.id);
+
+    if (totalError) {
+        throw totalError;
+    }
 
     // ======================================
-// Update Customer Analytics
+    // Update Customer Analytics
+    // ======================================
+
+    const analyticsUpdated =
+        await updateCustomerAnalytics(
+            customer.id,
+            total
+        );
+
+    if (!analyticsUpdated) {
+        throw new Error(
+            "Customer analytics update failed"
+        );
+    }
+
+    logSuccess("Customer analytics updated");
+
+    // ======================================
+// Clear Cart (Non-Critical)
 // ======================================
 
-const analyticsUpdated =
-    await updateCustomerAnalytics(
-        customer.id,
-        total
-    );
+try {
 
-if (analyticsUpdated) {
+    await clearCart(customerMobile);
 
-    logSuccess(
-        "Customer analytics updated"
-    );
+    logSuccess("Cart cleared");
 
-} else {
+} catch (err) {
 
-    logError(
-        "Customer analytics update failed"
-    );
+    logError("Cart clear failed");
+
+    console.error(err);
 
 }
-// Clear cart
-await clearCart(customerMobile);
+} catch (err) {
+
+    console.log("================================");
+    console.log("ORDER PROCESS FAILED");
+    console.log("================================");
+
+    console.error(err);
+
+    await rollbackOrder(order.id);
+
+    return null;
+
+}
+
 
 // ================================
 // ORDER SUMMARY
