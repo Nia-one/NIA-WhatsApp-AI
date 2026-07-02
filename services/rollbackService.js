@@ -1,5 +1,9 @@
 const supabase = require("../config/supabase");
 
+const {
+    restoreInventory
+} = require("./inventoryService");
+
 async function rollbackOrder(orderId) {
 
     console.log("================================");
@@ -8,12 +12,53 @@ async function rollbackOrder(orderId) {
 
     console.log("Order ID:", orderId);
 
-    // Delete Order Items
+// ======================================
+// Fetch Order Items
+// ======================================
 
-    const { error: itemError } = await supabase
-        .from("order_items")
-        .delete()
-        .eq("order_id", orderId);
+const { data: orderItems, error: fetchError } = await supabase
+    .from("order_items")
+    .select("*")
+    .eq("order_id", orderId);
+
+if (fetchError) {
+
+    console.error("Failed to fetch Order Items");
+
+    console.error(fetchError);
+
+    return false;
+
+}
+
+// ======================================
+// Restore Inventory
+// ======================================
+
+for (const item of orderItems) {
+
+    const restored = await restoreInventory(
+        item.product_id,
+        item.quantity
+    );
+
+if (!restored) {
+
+    throw new Error(
+        `Inventory restore failed for ${item.product_code}`
+    );
+
+}
+}
+
+// ======================================
+// Delete Order Items
+// ======================================
+
+const { error: itemError } = await supabase
+    .from("order_items")
+    .delete()
+    .eq("order_id", orderId);
 
     if (itemError) {
 

@@ -177,6 +177,8 @@ console.error(orderError);
             item.quantity
         );
 
+        
+
         if (!inventoryUpdated) {
             throw new Error(
                 `Inventory update failed for ${item.product_id}`
@@ -185,7 +187,10 @@ console.error(orderError);
 
         logSuccess(
             `Inventory updated for ${item.product_id}`
+
+            
         );
+        throw new Error("Inventory Rollback Test");
     }
 
     // ======================================
