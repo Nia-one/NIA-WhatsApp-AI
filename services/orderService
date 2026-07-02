@@ -1,5 +1,7 @@
 const supabase = require("../config/supabase");
 
+console.log("LOADED ORDER SERVICE:", __filename);
+
 const {
     logSection,
     logInfo,
@@ -125,15 +127,38 @@ console.error(orderError);
     // Insert Order Items
     for (const item of cartItems) {
 
+         console.log("Saving Order Item...");
+    console.log(item);
+
+
     total += item.price * item.quantity;
 
-    await supabase.from("order_items").insert({
+    const { error: itemError } = await supabase
+    .from("order_items")
+    .insert({
         order_id: order.id,
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price
     });
 
+if (itemError) {
+
+    console.log("================================");
+    console.log("ORDER ITEM ERROR");
+    console.log("================================");
+
+    console.error(itemError);
+
+} else {
+
+    console.log("================================");
+    console.log("ORDER ITEM INSERTED");
+    console.log("================================");
+
+    console.log(item.product_id);
+
+}
     // ======================================
     // Reduce Inventory
     // ======================================

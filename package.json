@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "sync": "node services/googleSheets/syncManager.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -27,6 +30,7 @@
     "express": "^5.2.1",
     "fill-range": "^7.1.1",
     "glob-parent": "^5.1.2",
+    "googleapis": "^173.0.0",
     "has-flag": "^3.0.0",
     "ignore-by-default": "^1.0.1",
     "is-binary-path": "^2.1.0",
