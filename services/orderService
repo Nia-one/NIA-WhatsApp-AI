@@ -170,7 +170,7 @@ console.error(orderError);
         console.log("ORDER ITEM INSERTED");
         console.log("================================");
 
-        throw new Error("Rollback Test");
+        
 
         const inventoryUpdated = await reduceInventory(
             item.product_id,
