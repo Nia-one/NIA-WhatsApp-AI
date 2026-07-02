@@ -34,23 +34,27 @@ if (fetchError) {
 // ======================================
 // Restore Inventory
 // ======================================
-
 for (const item of orderItems) {
+
+    console.log(
+        `Restoring inventory for ${item.product_code} Qty:${item.quantity}`
+    );
 
     const restored = await restoreInventory(
         item.product_id,
         item.quantity
     );
 
-if (!restored) {
+    if (!restored) {
+        throw new Error(
+            `Inventory restore failed for ${item.product_code}`
+        );
+    }
 
-    throw new Error(
-        `Inventory restore failed for ${item.product_code}`
+    console.log(
+        `Inventory restored for ${item.product_code}`
     );
-
 }
-}
-
 // ======================================
 // Delete Order Items
 // ======================================
