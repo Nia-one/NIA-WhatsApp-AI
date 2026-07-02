@@ -13,12 +13,14 @@ async function sendProductDetailsButtons(
 
 📦 Unit: ${product.unit}
 
+📦 Selected Qty: ${quantity}
+
 💰 MRP: ₹${product.mrp}
 🔥 Nia Price: ₹${product.nia_price}
-🎁 You Save: ₹${product.nia_savings}`,
-📦 Selected Qty : X
-💵 Total Amount : ₹XXX
-        [
+
+💵 Total Amount: ₹${product.nia_price * quantity}
+
+🎁 You Save: ₹${product.nia_savings * quantity}`        [
     {
         id: "add_to_cart",
         title: "Add to Cart"
