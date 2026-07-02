@@ -7,7 +7,7 @@ async function sendProductDetailsButtons(
 ) {
 
     await sendWhatsAppButtons(
-        mobile,
+    mobile,
 
 `🛍 *${product.product_name}*
 
@@ -20,7 +20,9 @@ async function sendProductDetailsButtons(
 
 💵 Total Amount: ₹${product.nia_price * quantity}
 
-🎁 You Save: ₹${product.nia_savings * quantity}`        [
+🎁 You Save: ₹${product.nia_savings * quantity}`,
+
+[
     {
         id: "add_to_cart",
         title: "Add to Cart"
@@ -34,9 +36,7 @@ async function sendProductDetailsButtons(
         title: "Home"
     }
 ]
-    );
-
-}
+);
 
 module.exports = {
     sendProductDetailsButtons
