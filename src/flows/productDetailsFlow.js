@@ -133,7 +133,8 @@ await sendProductList(
 
     await sendProductDetailsButtons(
     mobile,
-    product
+    product,
+    state.selected_quantity
 );
 
 return true;

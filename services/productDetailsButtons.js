@@ -1,6 +1,10 @@
 const { sendWhatsAppButtons } = require("./whatsappButtons");
 
-async function sendProductDetailsButtons(mobile, product) {
+async function sendProductDetailsButtons(
+    mobile,
+    product,
+    quantity
+) {
 
     await sendWhatsAppButtons(
         mobile,
@@ -12,7 +16,8 @@ async function sendProductDetailsButtons(mobile, product) {
 💰 MRP: ₹${product.mrp}
 🔥 Nia Price: ₹${product.nia_price}
 🎁 You Save: ₹${product.nia_savings}`,
-
+📦 Selected Qty : X
+💵 Total Amount : ₹XXX
         [
     {
         id: "add_to_cart",
