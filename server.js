@@ -1,6 +1,8 @@
 
 require("dotenv").config();
 
+console.log("RUNNING SERVER:", __filename);
+
 const validateEnv = require("./config/envValidator");
 validateEnv();
 
@@ -81,6 +83,8 @@ const {
     getOrCreateGuest,
     getOrCreateCustomer,
 } = require("./services/customerService");
+
+require("./services/googleSheets/syncManager");
 
 const {
     getProductsPage,
@@ -334,7 +338,7 @@ return res.sendStatus(200);
 // =======================================
 // GLOBAL ROUTING
 // =======================================
-
+console.log(">>> ENTERED sendProductList");
 // Product selected from WhatsApp List
 if (String(userMessage).startsWith("PRODUCT_")) {
 
@@ -372,10 +376,14 @@ if (
         }
     );
 
-    await sendProductList(
-        mobile,
-        page
-    );
+    console.log(">>> BEFORE sendProductList");
+
+await sendProductList(
+    mobile,
+    page
+);
+
+console.log(">>> AFTER sendProductList");
 
     return res.sendStatus(200);
 
@@ -902,26 +910,34 @@ async function sendProductCatalogue(
 
 async function sendProductList(mobile, page) {
 
-   const rows = page.products.map(product => ({
+    console.log("############################");
+    console.log("INSIDE sendProductList()");
+    console.log("Products:", page.products.length);
+    console.log(page.products.map(p => p.product_code));
+    console.log("############################");
 
-   id: `PRODUCT_${product.id}`,
+    const rows = page.products.map(product => ({
+        id: `PRODUCT_${product.id}`,
+        title: product.product_name,
+        description: `${product.unit} • Nia ₹${product.nia_price} • Save ₹${product.nia_savings}`
+    }));
 
-    title: product.product_name,
-description: `${product.unit} • Nia ₹${product.nia_price} • Save ₹${product.nia_savings}`
-}));
-await sendWhatsAppList(
-    mobile,
-    "🛍 *Choose a product from the list below:*",
-    "View Products",
-    [
-        {
-            title: "Nia Essentials",
-            rows: rows
-        }
-    ]
-);
+    console.log("Rows:", rows.length);
+
+    await sendWhatsAppList(
+        mobile,
+        "🛍 *Choose a product from the list below:*",
+        "View Products",
+        [
+            {
+                title: "Nia Essentials",
+                rows
+            }
+        ]
+    );
 }
 
+   
 async function sendQuantityList(mobile) {
 
     console.log("=================================");

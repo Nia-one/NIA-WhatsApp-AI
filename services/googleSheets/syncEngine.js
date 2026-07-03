@@ -37,8 +37,8 @@ async function syncTable(tableName, sheetName) {
     ];
 
     const exists = await sheetExists(sheetName);
-    // Check if Google Sheet tab exists
 
+// Check if Google Sheet tab exists
 if (!exists) {
 
     console.log(`📄 ${sheetName} not found. Creating...`);
@@ -47,11 +47,26 @@ if (!exists) {
 
 }
 
-// Clear existing data
-await clearSheet(sheetName);
+// Do NOT overwrite master sheets.
+// They are maintained in Google Sheets and synced to Supabase.
+const masterSheets = [
+    "Product_Master",
+    "Inventory_Master",
+    "Studio_Master"
+];
 
-// Write latest data
+if (masterSheets.includes(sheetName)) {
+
+    console.log(`⏩ Skipping Google Sheet overwrite for ${sheetName}`);
+
+    return;
+
+}
+
+// Transaction sheets are synced from Supabase → Google Sheets
+await clearSheet(sheetName);
 await writeSheet(sheetName, values);
+
     console.log(`✅ ${tableName} synced successfully.`);
 }
 

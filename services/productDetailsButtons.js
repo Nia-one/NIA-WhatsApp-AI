@@ -3,7 +3,7 @@ const { sendWhatsAppButtons } = require("./whatsappButtons");
 async function sendProductDetailsButtons(
     mobile,
     product,
-    quantity
+    quantity = 1
 ) {
 
     await sendWhatsAppButtons(

@@ -45,19 +45,16 @@ async function readProductMaster() {
 
 }
 
-async function getProductById(id) {
+async function getProductByCode(productCode) {
 
     const { data, error } = await supabase
         .from(TABLES.PRODUCT_MASTER)
-
         .select("*")
-        .eq("id", id)
+        .eq("product_code", productCode)
         .single();
 
     if (error) {
-
         return null;
-
     }
 
     return data;
@@ -71,19 +68,7 @@ async function updateProduct(product) {
     console.log(product.product_name);
     console.log("--------------------------------");
 
-    // Check whether the product exists
-    const { data: existingProduct, error: fetchError } = await supabase
-        .from(TABLES.PRODUCT_MASTER)
-        .select("id")
-        .eq("id", product.id)
-        .single();
-
-    if (fetchError || !existingProduct) {
-
-        console.log(`⚠ Product not found: ${product.product_name}`);
-        return;
-
-    }
+    
 
     // Update product
     const { error } = await supabase
@@ -98,20 +83,56 @@ async function updateProduct(product) {
             description: product.description,
             mrp: Number(product.mrp),
             nia_price: Number(product.nia_price),
-            nia_savings: Number(product.nia_savings),
+            nia_savings: Number(product.mrp) - Number(product.nia_price),
             unit: product.unit,
             hsn_code: product.hsn_code,
             image_url: product.image_url,
             is_active: String(product.is_active).toUpperCase() === "TRUE"
 
         })
-        .eq("id", product.id);
+        .eq("product_code", product.product_code);
 
     if (error) {
         throw error;
     }
 
     console.log("✅ Updated Successfully");
+
+}
+
+async function createProduct(product) {
+
+    console.log("--------------------------------");
+    console.log("Creating New Product");
+    console.log(product.product_name);
+    console.log("--------------------------------");
+
+    const { error } = await supabase
+        .from(TABLES.PRODUCT_MASTER)
+        .insert({
+
+        
+            product_code: product.product_code,
+            sku: product.sku,
+            product_name: product.product_name,
+            category: product.category,
+            brand: product.brand,
+            description: product.description,
+            mrp: Number(product.mrp),
+            nia_price: Number(product.nia_price),
+            nia_savings: Number(product.mrp) - Number(product.nia_price),
+            unit: product.unit,
+            hsn_code: product.hsn_code,
+            image_url: product.image_url,
+            is_active: String(product.is_active).toUpperCase() === "TRUE"
+
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    console.log("✅ New Product Created");
 
 }
 
@@ -132,13 +153,28 @@ async function syncProducts() {
 
     for (const product of products) {
 
-    const dbProduct = await getProductById(product.id);
+    const dbProduct = await getProductByCode(product.product_code);
 
-    const result = compareObjects(
-        product,
-        dbProduct,
-        PRODUCT_COMPARE_FIELDS
-    );
+// ========================================
+// NEW PRODUCT
+// ========================================
+
+if (!dbProduct) {
+
+    console.log("🆕 New Product Found :", product.product_code);
+    console.log(product);
+
+    await createProduct(product);
+
+    continue;
+
+}
+
+const result = compareObjects(
+    product,
+    dbProduct,
+    PRODUCT_COMPARE_FIELDS
+);
 
     if (!result.changed) {
 
@@ -160,7 +196,8 @@ async function syncProducts() {
 }
 module.exports = {
     readProductMaster,
-    getProductById,
+    getProductByCode,
+    createProduct,
     updateProduct,
     syncProducts
 };

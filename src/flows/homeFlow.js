@@ -21,15 +21,22 @@ async function homeFlow({
 
         const page = await getProductsPage(1);
 
-        if (!page.products.length) {
+console.log("================================");
+console.log("PRODUCT PAGE DEBUG");
+console.log("Products on page:", page.products.length);
+console.log("Total products:", page.totalProducts);
+console.log("Current page:", page.page);
+console.log("================================");
 
-            await sendWhatsAppMessage(
-                mobile,
-                "❌ No products are available right now."
-            );
+if (!page.products.length) {
 
-            return true;
-        }
+    await sendWhatsAppMessage(
+        mobile,
+        "❌ No products are available right now."
+    );
+
+    return true;
+}
 
         await updateConversation(mobile, {
             current_state: "PRODUCT_CATALOGUE",

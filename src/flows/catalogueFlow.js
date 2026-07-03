@@ -212,13 +212,21 @@ return true;
 
     const page = await getProductsPage(1);
 
+console.log("================================");
+console.log("CATALOGUE DEBUG");
+console.log("Products on page:", page.products.length);
+console.log("Total products:", page.totalProducts);
+console.log("Current page:", page.page);
+console.log("================================");
+
 await sendProductList(
     mobile,
     page
 );
 
 return true;
-}
+
+}   // <-- This closes catalogueFlow()
 
 module.exports = {
     catalogueFlow
