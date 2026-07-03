@@ -9,6 +9,8 @@ const supabase = require("./config/supabase");
 const { 
     homeFlow 
 } = require("./src/flows/homeFlow");
+const orderRoutes = require("./src/routes/orders");
+const inventoryRoutes = require("./src/routes/inventory");
 const { 
     catalogueFlow 
 } = require("./src/flows/catalogueFlow");
@@ -67,8 +69,13 @@ const {
 
 const app = express();
 app.use(express.json());
+app.use("/api/orders", orderRoutes);
+app.use("/api/inventory", inventoryRoutes);
+
 
 const PORT = process.env.PORT || 3000;
+
+
 
 app.get("/", (req, res) => {
     res.send("Nia WhatsApp AI Bot is Running");
@@ -81,6 +88,51 @@ app.get("/test-db", async (req, res) => {
     res.json(products[0]);
 
 });
+
+app.get("/test-status", async (req, res) => {
+
+    try {
+
+        const result = await require("./services/orderService")
+            .updateOrderStatus(
+                "7af05cfd-8f49-4485-aa49-20e7637c8848",
+                "Confirmed"
+            );
+
+        res.json(result);
+
+    } catch (err) {
+
+        res.status(500).json({
+            error: err.message
+        });
+
+    }
+
+});
+
+app.get("/test-inventory", async (req, res) => {
+
+    try {
+
+        const result = await require("./services/inventoryService")
+            .updateInventory(
+                "822fee35-9b3c-429a-b85e-9c543bec138f",
+                3
+            );
+
+        res.json(result);
+
+    } catch (err) {
+
+        res.status(500).json({
+            error: err.message
+        });
+
+    }
+
+});
+
 // =======================================
 // WEBHOOK VERIFICATION
 // =======================================

@@ -279,6 +279,90 @@ return {
 };
 }
 
+async function getOrders(filters = {}) {
+    const page = Number(filters.page) || 1;
+    const limit = Number(filters.limit) || 20;
+
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    let query = supabase
+        .from("orders")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false });
+
+    if (filters.status) {
+        query = query.eq("order_status", filters.status);
+    }
+
+    const {
+    data,
+    error,
+    count
+} = await query
+    .range(from, to);
+
+    if (error) {
+        throw error;
+    }
+
+    return {
+    page,
+    limit,
+    total: count,
+    totalPages: Math.ceil(count / limit),
+    orders: data
+};
+}
+
+async function getOrderById(orderId) {
+    const {
+    data: order,
+    error
+} = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .single();
+        if (error) {
+        throw error;
+    }
+
+    return order;
+
+}
+
+
+
+async function updateOrderStatus(orderId, status) {
+    const { data, error } = await supabase
+    .from("orders")
+    .update({
+        order_status: status
+    })
+    .eq("id", orderId)
+    .select()
+    .single();
+     if (error) {
+        throw error;
+    }
+    const { error: historyError } = await supabase
+    .from("order_status_history")
+    .insert({
+        order_id: orderId,
+        status: status,
+        remarks: `Order status changed to ${status}`,
+        updated_by: "Admin"
+    });
+
+if (historyError) {
+    throw historyError;
+}
+      return data;
+
+}
 module.exports = {
-    createOrder
+    createOrder,
+    getOrders,
+    getOrderById,
+    updateOrderStatus
 };
