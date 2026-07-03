@@ -9,8 +9,18 @@ const supabase = require("./config/supabase");
 const { 
     homeFlow 
 } = require("./src/flows/homeFlow");
+const morgan = require("morgan");
+
+const helmet = require("helmet");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+
 const orderRoutes = require("./src/routes/orders");
 const inventoryRoutes = require("./src/routes/inventory");
+const customerRoutes = require("./src/routes/customers");
+const reportRoutes = require("./src/routes/reports");
+const adminRoutes = require("./src/routes/admin");
+const errorHandler = require("./src/middleware/errorHandler");
 const { 
     catalogueFlow 
 } = require("./src/flows/catalogueFlow");
@@ -68,9 +78,35 @@ const {
 
 
 const app = express();
+
+// Security Headers
+app.use(helmet());
+
+// Enable CORS
+app.use(cors());
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: {
+        success: false,
+        message: "Too many requests. Please try again later."
+    }
+});
+
+app.use(limiter);
+
+// Request Logger
+app.use(morgan("dev"));
+
 app.use(express.json());
+
 app.use("/api/orders", orderRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/reports", reportRoutes);
 
 
 const PORT = process.env.PORT || 3000;
@@ -910,6 +946,9 @@ async function sendWhatsAppMessage(to, message) {
     }
 
 }
+
+// Global Error Handler
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

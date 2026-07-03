@@ -125,6 +125,95 @@ async function findGuestByMobile(mobileNumber) {
     return data;
 }
 
+// ======================================
+// Get All Customers
+// ======================================
+
+async function getCustomers() {
+
+    const { data, error } = await supabase
+        .from("customer_master")
+        .select(`
+    id,
+    customer_name,
+    mobile_number,
+    total_orders,
+    total_spent,
+    last_order_date,
+    preferred_language,
+    is_active,
+    created_at
+`)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+
+}
+
+// ======================================
+// Get Customer By ID
+// ======================================
+
+async function getCustomerById(customerId) {
+
+    const { data, error } = await supabase
+    .from("customer_master")
+    .select("*")
+    .eq("id", customerId)
+    .single();
+    if (error) {
+        throw error;
+    }
+
+    return data;
+
+}
+
+// ======================================
+// Get Customer Orders
+// ======================================
+const getCustomerOrders = async (customerId) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+      order_number,
+      order_date,
+      order_status,
+      grand_total
+    `)
+    .eq("customer_id", customerId)
+    .order("order_date", { ascending: false });
+
+  if (error) throw error;
+
+  return data.map(order => ({
+    order_number: order.order_number,
+    order_date: order.order_date,
+    status: order.order_status,
+    total_amount: order.grand_total
+  }));
+};
+
+// ======================================
+// Get Customer Statistics
+// ======================================
+const getCustomerStats = async (customerId) => {
+  const customer = await getCustomerById(customerId);
+
+  return {
+    total_orders: customer.total_orders,
+    total_spent: customer.total_spent,
+    last_order_date: customer.last_order_date,
+    average_order_value:
+      customer.total_orders > 0
+        ? Number(customer.total_spent) / Number(customer.total_orders)
+        : 0,
+  };
+};
 
 
 module.exports = {
@@ -133,5 +222,9 @@ module.exports = {
     getOrCreateGuest,
     findCustomerByMobile,
     createCustomer,
-    getOrCreateCustomer
+    getOrCreateCustomer,
+    getCustomers,
+    getCustomerById,
+    getCustomerOrders,
+    getCustomerStats
 };
