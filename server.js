@@ -80,7 +80,6 @@ const {
     updateGuestName,
     getOrCreateGuest,
     getOrCreateCustomer,
-    ...
 } = require("./services/customerService");
 
 const {
