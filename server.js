@@ -445,10 +445,23 @@ if (state.current_state === "ASK_NAME") {
 
     const customerName = String(userMessage).trim();
 
-    await updateGuestName(
-        mobile,
-        customerName
-    );
+    const guest = await findGuestByMobile(mobile);
+
+    if (guest) {
+
+        await updateGuestName(
+            mobile,
+            customerName
+        );
+
+    } else {
+
+        await createGuest(
+            mobile,
+            customerName
+        );
+
+    }
 
     await updateConversation(
         mobile,

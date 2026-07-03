@@ -4,13 +4,14 @@ const supabase = require("../config/supabase");
 // Create Guest
 // ======================================
 
-async function createGuest(mobileNumber) {
+async function createGuest(mobileNumber, guestName) {
 
     const { data, error } = await supabase
         .from("guest_master")
         .insert({
-            mobile_number: mobileNumber
-        })
+    mobile_number: mobileNumber,
+    guest_name: guestName
+})
         .select()
         .single();
 
