@@ -1,7 +1,7 @@
 require("dotenv").config();
 
-console.log("URL:", process.env.SUPABASE_URL);
-console.log("SERVICE KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY);
+console.log("✅ Supabase URL loaded");
+console.log("✅ Service Role Key loaded");
 
 const { createClient } = require("@supabase/supabase-js");
 

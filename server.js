@@ -1,6 +1,9 @@
 
 require("dotenv").config();
 
+const validateEnv = require("./config/envValidator");
+validateEnv();
+
 const express = require("express");
 const axios = require("axios");
 const supabase = require("./config/supabase");
@@ -17,6 +20,7 @@ const rateLimit = require("express-rate-limit");
 
 const orderRoutes = require("./src/routes/orders");
 const inventoryRoutes = require("./src/routes/inventory");
+
 const customerRoutes = require("./src/routes/customers");
 const reportRoutes = require("./src/routes/reports");
 const adminRoutes = require("./src/routes/admin");
@@ -117,57 +121,9 @@ app.get("/", (req, res) => {
     res.send("Nia WhatsApp AI Bot is Running");
 });
 
-app.get("/test-db", async (req, res) => {
 
-    const products = await getProducts();
 
-    res.json(products[0]);
 
-});
-
-app.get("/test-status", async (req, res) => {
-
-    try {
-
-        const result = await require("./services/orderService")
-            .updateOrderStatus(
-                "7af05cfd-8f49-4485-aa49-20e7637c8848",
-                "Confirmed"
-            );
-
-        res.json(result);
-
-    } catch (err) {
-
-        res.status(500).json({
-            error: err.message
-        });
-
-    }
-
-});
-
-app.get("/test-inventory", async (req, res) => {
-
-    try {
-
-        const result = await require("./services/inventoryService")
-            .updateInventory(
-                "822fee35-9b3c-429a-b85e-9c543bec138f",
-                3
-            );
-
-        res.json(result);
-
-    } catch (err) {
-
-        res.status(500).json({
-            error: err.message
-        });
-
-    }
-
-});
 
 // =======================================
 // WEBHOOK VERIFICATION
