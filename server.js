@@ -176,6 +176,27 @@ const userMessage = (
 
 let state = await getConversationState(mobile);
 
+const guest = await findGuestByMobile(mobile);
+
+    console.log("================================");
+console.log("Incoming Mobile:", mobile);
+console.log("Guest Record:", guest);
+console.log("================================");
+
+    // Guest exists but name is missing
+    if (!guest || !guest.guest_name || guest.guest_name.trim() === "") {
+
+        await updateConversation(mobile, {
+            current_state: "ASK_NAME"
+        });
+
+        await sendWhatsAppMessage(
+    mobile,
+    "😊 Before we begin, may I know your full name?"
+);
+
+        return res.sendStatus(200);
+    }
 
 
 const command = userMessage.toLowerCase().trim();
@@ -191,27 +212,7 @@ if (
     ].includes(command)
 ) {
 
-    const guest = await findGuestByMobile(mobile);
-
-    console.log("================================");
-console.log("Incoming Mobile:", mobile);
-console.log("Guest Record:", guest);
-console.log("================================");
-
-    // Guest exists but name is missing
-    if (guest && (!guest.guest_name || guest.guest_name.trim() === "")) {
-
-        await updateConversation(mobile, {
-            current_state: "ASK_NAME"
-        });
-
-        await sendWhatsAppMessage(
-    mobile,
-    "😊 Before we begin, may I know your full name?"
-);
-
-        return res.sendStatus(200);
-    }
+    
 
     await updateConversation(
         mobile,
@@ -771,14 +772,14 @@ async function sendHomeMenu(mobile) {
     const welcomeMessage = guest?.guest_name
         ? `👋 *Hi, ${guest.guest_name}!*
 
-Welcome to *NIA Essentials!* 🌿
+Welcome to *Nia Essentials!* 🌿
 
 We're delighted to have you here. 😊
 
 🛍️ Get genuine daily essentials at exclusive member prices, delivered right to your doorstep.
 
 *How may I assist you today?*`
-        : `👋 *Welcome to NIA Essentials!* 🌿
+        : `👋 *Welcome to Nia Essentials!* 🌿
 
 We're delighted to have you here. 😊
 
@@ -836,7 +837,7 @@ async function sendProductCatalogue(
 ) {
 
     let msg =
-`🛒 *NIA Essentials*
+`🛒 *Nia Essentials*
 
 📄 Products ${((data.page - 1) * 5) + 1}-${Math.min(data.page * 5, data.totalProducts)} of ${data.totalProducts}
 
@@ -893,7 +894,7 @@ await sendWhatsAppList(
     "View Products",
     [
         {
-            title: "NIA Essentials",
+            title: "Nia Essentials",
             rows: rows
         }
     ]
