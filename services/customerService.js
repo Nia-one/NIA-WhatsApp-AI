@@ -215,6 +215,29 @@ const getCustomerStats = async (customerId) => {
   };
 };
 
+// ======================================
+// Update Guest Name
+// ======================================
+
+async function updateGuestName(mobileNumber, guestName) {
+
+    const { data, error } = await supabase
+        .from("guest_master")
+        .update({
+            guest_name: guestName,
+            updated_at: new Date()
+        })
+        .eq("mobile_number", mobileNumber)
+        .select()
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+
+}
 
 module.exports = {
     findGuestByMobile,
@@ -226,5 +249,6 @@ module.exports = {
     getCustomers,
     getCustomerById,
     getCustomerOrders,
+    updateGuestName,
     getCustomerStats
 };

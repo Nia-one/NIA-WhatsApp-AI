@@ -75,7 +75,8 @@ const {
 } = require("./services/conversationService");
 
 const {
-    findGuestByMobile
+    findGuestByMobile,
+    updateGuestName
 } = require("./services/customerService");
 
 const {
@@ -189,6 +190,28 @@ if (
         "home"
     ].includes(command)
 ) {
+
+    const guest = await findGuestByMobile(mobile);
+
+    console.log("================================");
+console.log("Incoming Mobile:", mobile);
+console.log("Guest Record:", guest);
+console.log("================================");
+
+    // Guest exists but name is missing
+    if (guest && (!guest.guest_name || guest.guest_name.trim() === "")) {
+
+        await updateConversation(mobile, {
+            current_state: "ASK_NAME"
+        });
+
+        await sendWhatsAppMessage(
+    mobile,
+    "😊 Before we begin, may I know your full name?"
+);
+
+        return res.sendStatus(200);
+    }
 
     await updateConversation(
         mobile,
@@ -405,6 +428,34 @@ if (
         sendEmptyCartButtons,
         sendOrderSuccessButtons
     });
+
+    return res.sendStatus(200);
+
+}
+
+// =======================================
+// ASK NAME
+// =======================================
+
+if (state.current_state === "ASK_NAME") {
+
+    const customerName = String(userMessage).trim();
+
+    await updateGuestName(
+        mobile,
+        customerName
+    );
+
+    await updateConversation(
+        mobile,
+        {
+            current_state: "HOME",
+            current_product_index: 0,
+            last_product_id: null
+        }
+    );
+
+    await sendHomeMenu(mobile);
 
     return res.sendStatus(200);
 
