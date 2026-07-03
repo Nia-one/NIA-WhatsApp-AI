@@ -1,10 +1,7 @@
 const axios = require("axios");
 
 async function sendWhatsAppList(to, body, buttonText, sections) {
-
-    throw new Error("WHATSAPP LIST FUNCTION EXECUTED");
-
-    const payload = {
+       const payload = {
         messaging_product: "whatsapp",
         to,
         type: "interactive",
