@@ -75,6 +75,10 @@ const {
 } = require("./services/conversationService");
 
 const {
+    findGuestByMobile
+} = require("./services/customerService");
+
+const {
     getProductsPage,
     getNextPage,
     getPreviousPage
@@ -711,31 +715,43 @@ if (state.current_state === "CHECKOUT") {
 
 async function sendHomeMenu(mobile) {
 
-    await sendWhatsAppButtons(
-        mobile,
+    const guest = await findGuestByMobile(mobile);
 
-`👋 *Welcome to Nia Essentials!*
+    const welcomeMessage = guest?.guest_name
+        ? `👋 *Hi, ${guest.guest_name}!*
+
+Welcome to *NIA Essentials!* 🌿
 
 We're delighted to have you here. 😊
 
 🛍️ Get genuine daily essentials at exclusive member prices, delivered right to your doorstep.
 
-*How may I assist you today?*`,
+*How may I assist you today?*`
+        : `👋 *Welcome to NIA Essentials!* 🌿
 
+We're delighted to have you here. 😊
+
+🛍️ Get genuine daily essentials at exclusive member prices, delivered right to your doorstep.
+
+*How may I assist you today?*`;
+
+    await sendWhatsAppButtons(
+        mobile,
+        welcomeMessage,
         [
-    {
-        id: "browse_products",
-        title: "Shop Now"
-    },
-    {
-        id: "view_cart",
-        title: "View Cart"
-    },
-    {
-        id: "checkout",
-        title: "Checkout"
-    }
-]
+            {
+                id: "browse_products",
+                title: "Shop Now"
+            },
+            {
+                id: "view_cart",
+                title: "View Cart"
+            },
+            {
+                id: "checkout",
+                title: "Checkout"
+            }
+        ]
     );
 
 }
