@@ -184,7 +184,10 @@ console.log("Guest Record:", guest);
 console.log("================================");
 
     // Guest exists but name is missing
-    if (!guest || !guest.guest_name || guest.guest_name.trim() === "") {
+    if (
+    state?.current_state !== "ASK_NAME" &&
+    (!guest || !guest.guest_name || guest.guest_name.trim() === "")
+) {
 
         await updateConversation(mobile, {
             current_state: "ASK_NAME"
