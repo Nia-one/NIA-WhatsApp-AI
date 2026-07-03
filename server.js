@@ -75,8 +75,12 @@ const {
 } = require("./services/conversationService");
 
 const {
+    createGuest,
     findGuestByMobile,
-    updateGuestName
+    updateGuestName,
+    getOrCreateGuest,
+    getOrCreateCustomer,
+    ...
 } = require("./services/customerService");
 
 const {
