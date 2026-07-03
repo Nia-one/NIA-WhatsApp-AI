@@ -77,9 +77,15 @@ const orderNumber = await generateOrderNumber();
 const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
-        order_number: orderNumber,        customer_id: customer.id,
+        order_number: orderNumber,
+
+        customer_id: customer.id,
         guest_id: guest.id,
         studio_id: customer.studio_id || null,
+
+        // Customer Snapshot
+customer_name: customer.customer_name,
+customer_mobile: customer.mobile_number,
 
         subtotal: 0,
         grand_total: 0,
