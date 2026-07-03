@@ -456,6 +456,8 @@ if (state.current_state === "ASK_NAME") {
 
     } else {
 
+        console.log("Creating new guest...");
+
         await createGuest(
             mobile,
             customerName
