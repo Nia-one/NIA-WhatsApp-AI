@@ -1,6 +1,9 @@
 const sheets = require("../../config/google");
 require("dotenv").config();
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
+console.log("================================");
+console.log("GOOGLE_SPREADSHEET_ID =", SPREADSHEET_ID);
+console.log("================================");
 // Read data from a sheet
 async function readSheet(sheetName) {
 
