@@ -104,8 +104,7 @@ async function getOrCreateCustomer(guest) {
             .from("customer_master")
           .update({
     customer_name: guest.guest_name,
-    studio_code: guest.studio_code,
-    studio_id: guest.studio_code
+    studio_code: guest.studio_code
 })
             .eq("id", customer.id)
             .select()
