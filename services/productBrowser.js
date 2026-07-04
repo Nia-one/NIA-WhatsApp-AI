@@ -5,7 +5,7 @@ async function getProductsPage(page = 1) {
 
     const products = await getProducts();
 
-    const pageSize = 15;
+    const pageSize = 10;
 
     const start = (page - 1) * pageSize;
 
@@ -42,7 +42,7 @@ async function getProductByPageSelection(page, selection) {
 
     const products = await getProducts();
 
-   const pageSize = 15;
+   const pageSize = 10;
 
     const index = ((page - 1) * pageSize) + (selection - 1);
 
