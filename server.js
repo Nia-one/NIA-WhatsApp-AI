@@ -190,10 +190,35 @@ console.log("Incoming Mobile:", mobile);
 console.log("Guest Record:", guest);
 console.log("================================");
 
+
+// =======================================
+// New Guest
+// =======================================
+
+if (
+    state?.current_state !== "ASK_NAME" &&
+    !guest
+) {
+
+    await updateConversation(mobile, {
+        current_state: "ASK_NAME"
+    });
+
+    await sendWhatsAppMessage(
+        mobile,
+        "😊 Before we begin, may I know your full name?"
+    );
+
+    return res.sendStatus(200);
+}
+
     // Guest exists but name is missing
     if (
     state?.current_state !== "ASK_NAME" &&
-    (!guest || !guest.guest_name || guest.guest_name.trim() === "")
+    (
+    guest &&
+    (!guest.guest_name || guest.guest_name.trim() === "")
+)
 ) {
 
         await updateConversation(mobile, {
@@ -461,18 +486,26 @@ if (state.current_state === "ASK_NAME") {
     if (guest) {
 
         await updateGuestName(
-            mobile,
-            customerName
-        );
+    mobile,
+    customerName
+);
+
+const updatedGuest =
+    await findGuestByMobile(mobile);
+
+await getOrCreateCustomer(updatedGuest);
+
 
     } else {
 
         console.log("Creating new guest...");
 
-        await createGuest(
-            mobile,
-            customerName
-        );
+        const guest = await createGuest(
+    mobile,
+    customerName
+);
+
+await getOrCreateCustomer(guest);
 
     }
 
