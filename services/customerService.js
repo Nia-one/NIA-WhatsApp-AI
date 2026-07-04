@@ -102,17 +102,27 @@ async function getOrCreateCustomer(guest) {
 
         const { data: updatedCustomer, error } = await supabase
             .from("customer_master")
-            .update({
-                customer_name: guest.guest_name,
-                studio_id: guest.studio_code
-            })
+          .update({
+    customer_name: guest.guest_name,
+    studio_code: guest.studio_code,
+    studio_id: guest.studio_code
+})
             .eq("id", customer.id)
             .select()
             .single();
 
-        if (!error) {
-            return updatedCustomer;
-        }
+        if (error) {
+
+    console.error("Customer Update Error:");
+    console.error(error);
+
+} else {
+
+    console.log("Customer Updated Successfully:");
+    console.log(updatedCustomer);
+
+    return updatedCustomer;
+}
     }
 
     return customer;
