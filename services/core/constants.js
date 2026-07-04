@@ -41,6 +41,7 @@ const PRODUCT_COMPARE_FIELDS = [
     "product_name",
     "category",
     "brand",
+    "purchase_rate",
     "description",
     "mrp",
     "nia_price",
@@ -51,7 +52,6 @@ const PRODUCT_COMPARE_FIELDS = [
     "is_active"
 
 ];
-
 const INVENTORY_COMPARE_FIELDS = [
 
     "total_stock",

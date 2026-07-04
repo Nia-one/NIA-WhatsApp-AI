@@ -167,6 +167,12 @@ async function syncProducts() {
 
     for (const product of products) {
 
+        console.log("========== PRODUCT DEBUG ==========");
+console.log(product);
+console.log("Purchase Rate:", product.purchase_rate);
+console.log("Purchase Rate (Sheet):", product["Purchase Rate"]);
+console.log("==================================");
+
     const dbProduct = await getProductByCode(product.product_code);
 
 // ========================================
