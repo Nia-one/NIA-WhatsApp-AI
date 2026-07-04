@@ -82,7 +82,12 @@ async function updateProduct(product) {
             product_name: product.product_name,
             category: product.category,
             brand: product.brand,
-purchase_rate: Number(product["Purchase Rate"] || 0),
+purchase_rate: Number(
+    product.purchase_rate ||
+    product["Purchase Rate"] ||
+    product["purchase_rate"] ||
+    0
+),
 description: product.description,
 mrp: Number(product.mrp),
             nia_price: Number(product.nia_price),
@@ -120,7 +125,12 @@ async function createProduct(product) {
             product_name: product.product_name,
             category: product.category,
             brand: product.brand,
-purchase_rate: Number(product["Purchase Rate"] || 0),
+purchase_rate: Number(
+    product.purchase_rate ||
+    product["Purchase Rate"] ||
+    product["purchase_rate"] ||
+    0
+),
 description: product.description,
 mrp: Number(product.mrp),
             nia_price: Number(product.nia_price),
