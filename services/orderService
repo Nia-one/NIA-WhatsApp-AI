@@ -147,26 +147,88 @@ console.error(orderError);
         total += item.price * item.quantity;
 
         const product = await supabase
-            .from("product_master")
-            .select("product_code, product_name")
-            .eq("id", item.product_id)
-            .single();
+    .from("product_master")
+    .select(`
+        product_code,
+        product_name,
+        purchase_rate,
+        nia_price,
+        mrp,
+        nia_savings
+    `)
+    .eq("id", item.product_id)
+    .single();
 
         if (product.error) {
             throw product.error;
         }
 
-        const { error: itemError } = await supabase
-            .from("order_items")
-            .insert({
-                order_id: order.id,
-                product_id: item.product_id,
-                product_code: product.data.product_code,
-                product_name: product.data.product_name,
-                quantity: item.quantity,
-                unit_price: item.price,
-                total_price: item.price * item.quantity
-            });
+        const purchaseRate = Number(product.data.purchase_rate || 0);
+const sellingPrice = Number(product.data.nia_price || item.price);
+
+const revenue = sellingPrice * item.quantity;
+const cost = purchaseRate * item.quantity;
+const grossProfit = revenue - cost;
+
+
+console.log("========== ORDER SNAPSHOT ==========");
+
+console.log({
+    orderNumber,
+    customerName: customer.customer_name,
+    customerMobile: customer.mobile_number,
+    studioId: customer.studio_id,
+
+    productCode: product.data.product_code,
+    productName: product.data.product_name,
+
+    purchaseRate,
+    sellingPrice,
+
+    mrp: product.data.mrp,
+    niaSavings: product.data.nia_savings,
+
+    revenue,
+    cost,
+    grossProfit
+});
+
+
+console.log("====================================");
+
+const { error: itemError } = await supabase
+    .from("order_items")
+    .insert({
+
+        // Order Snapshot
+order_id: order.id,
+order_number: orderNumber,
+
+        // Customer Snapshot
+        customer_name: customer.customer_name,
+        customer_mobile: customer.mobile_number,
+        studio_id: customer.studio_id || null,
+
+        // Product Snapshot
+        product_id: item.product_id,
+        product_code: product.data.product_code,
+        product_name: product.data.product_name,
+
+        // Quantity
+        quantity: item.quantity,
+
+        // Financial Snapshot
+        unit_price: sellingPrice,
+        total_price: revenue,
+
+        purchase_rate: purchaseRate,
+        selling_price: sellingPrice,
+product_mrp: product.data.mrp,
+nia_savings: product.data.nia_savings,
+        revenue: revenue,
+        cost: cost,
+        gross_profit: grossProfit
+    });
 
         if (itemError) {
             throw itemError;

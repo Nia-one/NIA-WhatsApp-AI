@@ -18,7 +18,6 @@ async function readProductMaster() {
     if (!rows || rows.length === 0) {
 
         console.log("No data found.");
-
         return [];
 
     }
@@ -27,8 +26,6 @@ async function readProductMaster() {
 
     const products = rows.slice(1).map(row => {
 
-        console.log(products[0]);
-console.log(Object.keys(products[0]));
         const product = {};
 
         headers.forEach((header, index) => {
@@ -41,12 +38,12 @@ console.log(Object.keys(products[0]));
 
     });
 
+    
     console.log(`Products Found : ${products.length}`);
 
     return products;
 
 }
-
 async function getProductByCode(productCode) {
 
     const { data, error } = await supabase
