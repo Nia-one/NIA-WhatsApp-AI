@@ -60,19 +60,45 @@ async function findCustomerByMobile(mobileNumber) {
     return data;
 }
 
+async function getStudioIdByCode(studioCode) {
+
+    if (!studioCode) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from("studio_master")
+        .select("id")
+        .eq("studio_code", studioCode)
+        .single();
+
+    if (error) {
+        console.error("Studio Lookup Error:", error);
+        return null;
+    }
+
+    return data.id;
+}
+
+
 // ======================================
 // Create Customer
 // ======================================
 
 async function createCustomer(guest) {
 
+    const studioId = await getStudioIdByCode(
+        guest.studio_code
+    );
+
     const { data, error } = await supabase
-        .from("customer_master")
+            .from("customer_master")
         .insert({
             mobile_number: guest.mobile_number,
             customer_name: guest.guest_name,
             guest_id: guest.id,
-            studio_id: guest.studio_code
+            studio_id: studioId,
+studio_code: guest.studio_code
         })
         .select()
         .single();
@@ -100,12 +126,17 @@ async function getOrCreateCustomer(guest) {
     // Update missing fields from Guest Master
     if (!customer.customer_name || !customer.studio_id) {
 
-        const { data: updatedCustomer, error } = await supabase
-            .from("customer_master")
-          .update({
-    customer_name: guest.guest_name,
-    studio_code: guest.studio_code
-})
+        const studioId = await getStudioIdByCode(
+    guest.studio_code
+);
+
+const { data: updatedCustomer, error } = await supabase
+    .from("customer_master")
+    .update({
+        customer_name: guest.guest_name,
+        studio_code: guest.studio_code,
+        studio_id: studioId
+    })
             .eq("id", customer.id)
             .select()
             .single();
@@ -117,9 +148,7 @@ async function getOrCreateCustomer(guest) {
 
 } else {
 
-    console.log("Customer Updated Successfully:");
-    console.log(updatedCustomer);
-
+    
     return updatedCustomer;
 }
     }
