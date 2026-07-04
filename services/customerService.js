@@ -72,7 +72,7 @@ async function createCustomer(guest) {
             mobile_number: guest.mobile_number,
             customer_name: guest.guest_name,
             guest_id: guest.id,
-            studio_id: guest.studio_id
+            studio_id: guest.studio_code
         })
         .select()
         .single();
@@ -96,8 +96,27 @@ async function getOrCreateCustomer(guest) {
     );
 
     if (customer) {
-        return customer;
+
+    // Update missing fields from Guest Master
+    if (!customer.customer_name || !customer.studio_id) {
+
+        const { data: updatedCustomer, error } = await supabase
+            .from("customer_master")
+            .update({
+                customer_name: guest.guest_name,
+                studio_id: guest.studio_code
+            })
+            .eq("id", customer.id)
+            .select()
+            .single();
+
+        if (!error) {
+            return updatedCustomer;
+        }
     }
+
+    return customer;
+}
 
     customer = await createCustomer(
         guest
