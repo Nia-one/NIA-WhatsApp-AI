@@ -27,6 +27,8 @@ async function readProductMaster() {
 
     const products = rows.slice(1).map(row => {
 
+        console.log(products[0]);
+console.log(Object.keys(products[0]));
         const product = {};
 
         headers.forEach((header, index) => {
