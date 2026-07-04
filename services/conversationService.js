@@ -38,16 +38,23 @@ async function updateConversation(mobile, values) {
     console.log("Values:", values);
     console.log("================================");
 
-    const { data, error } = await supabase
+    const existing = await getConversationState(mobile);
+
+    if (!existing) {
+
+        return await supabase
+            .from("conversation_state")
+            .insert({
+                customer_mobile: mobile,
+                ...values
+            });
+
+    }
+
+    return await supabase
         .from("conversation_state")
         .update(values)
         .eq("customer_mobile", mobile);
-
-    if (error) {
-        console.log("Update Error:", error);
-    }
-
-    return { data, error };
 }
 
 async function resetConversation(mobile) {
