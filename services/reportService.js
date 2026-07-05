@@ -5,6 +5,7 @@ const supabase = require("../config/supabase");
 // ======================================
 const getDashboardReport = async () => {
 
+  // Orders
   const { data: orders, error } = await supabase
     .from("orders")
     .select(`
@@ -13,6 +14,27 @@ const getDashboardReport = async () => {
     `);
 
   if (error) throw error;
+
+  // Customer Count
+  const { count: totalCustomers, error: customerError } = await supabase
+    .from("customer_master")
+    .select("*", { count: "exact", head: true });
+
+  if (customerError) throw customerError;
+
+  // Total Cost
+  const { data: costData, error: costError } = await supabase
+    .from("order_items")
+    .select("cost");
+
+  if (costError) throw costError;
+
+  // Products Sold
+  const { data: productData, error: productError } = await supabase
+    .from("order_items")
+    .select("quantity");
+
+  if (productError) throw productError;
 
   const today = new Date();
 
@@ -58,6 +80,21 @@ const getDashboardReport = async () => {
 
   });
 
+  const totalCost = costData.reduce((sum, item) => {
+  return sum + Number(item.cost || 0);
+}, 0);
+
+const grossProfit = totalRevenue - totalCost;
+
+const grossMargin =
+  totalRevenue > 0
+    ? Number(((grossProfit / totalRevenue) * 100).toFixed(2))
+    : 0;
+
+const totalProductsSold = productData.reduce((sum, item) => {
+  return sum + Number(item.quantity || 0);
+}, 0);
+
   return {
 
     today_sales: todaySales,
@@ -70,14 +107,22 @@ const getDashboardReport = async () => {
 
     total_orders: orders.length,
 
+    total_customers: totalCustomers,
+
+    total_cost: totalCost,
+
+    gross_profit: grossProfit,
+
+    gross_margin: grossMargin,
+
+    total_products_sold: totalProductsSold,
+
     average_order_value:
       orders.length > 0
-        ? Number(
-            (totalRevenue / orders.length).toFixed(2)
-          )
+        ? Number((totalRevenue / orders.length).toFixed(2))
         : 0
 
-  };
+};
 
 };
 
@@ -130,8 +175,10 @@ const getTopProducts = async () => {
       product_code,
       product_name,
       quantity,
-      total_price
-    `);
+      revenue,
+      cost,
+      gross_profit
+`);
 
   if (error) throw error;
 
@@ -142,21 +189,37 @@ const getTopProducts = async () => {
     if (!products[item.product_code]) {
 
       products[item.product_code] = {
-        product_code: item.product_code,
-        product_name: item.product_name,
-        total_quantity: 0,
-        total_revenue: 0
-      };
+    product_code: item.product_code,
+    product_name: item.product_name,
+    total_quantity: 0,
+    total_revenue: 0,
+    total_cost: 0,
+    gross_profit: 0
+};
 
     }
 
     products[item.product_code].total_quantity += Number(item.quantity);
 
-    products[item.product_code].total_revenue += Number(item.total_price);
+    products[item.product_code].total_revenue += Number(item.revenue || 0);
+
+    products[item.product_code].total_cost += Number(item.cost || 0);
+
+    products[item.product_code].gross_profit += Number(item.gross_profit || 0);
 
   });
 
   return Object.values(products)
+    .map(product => ({
+
+        ...product,
+
+        gross_margin:
+            product.total_revenue > 0
+                ? Number(((product.gross_profit / product.total_revenue) * 100).toFixed(2))
+                : 0
+
+    }))
     .sort((a, b) => b.total_quantity - a.total_quantity);
 
 };

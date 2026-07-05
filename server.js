@@ -9,7 +9,7 @@ validateEnv();
 const express = require("express");
 const axios = require("axios");
 const supabase = require("./config/supabase");
-const reportingRoutes = require("./src/routes/reportingRoutes");
+
 
 // NEW IMPORT
 const { 
@@ -124,7 +124,7 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportRoutes);
-app.use("/api/reports", reportingRoutes);
+
 
 
 const PORT = process.env.PORT || 3000;
