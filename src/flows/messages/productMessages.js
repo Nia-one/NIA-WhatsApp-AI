@@ -14,7 +14,7 @@ function buildProductDetails(product) {
 
 💰 MRP : ₹${product.mrp}
 
-💚 NIA Price : ₹${product.nia_price}
+💚 Nia Price : ₹${product.nia_price}
 
 🎁 You Save : ₹${product.nia_savings}
 

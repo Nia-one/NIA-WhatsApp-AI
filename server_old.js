@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Home Page
 app.get("/", (req, res) => {
-    res.send("NIA WhatsApp AI Bot is Running");
+    res.send("Nia WhatsApp AI Bot is Running");
 });
 
 // WhatsApp Verification

@@ -1,77 +1,33 @@
-const supabase = require("../config/supabase");
-const {
-    addOrderTimeline
-} = require("./orderTimelineService");
+const ORDER_WORKFLOW = {
+  pending: ["confirmed", "cancelled"],
 
-const {
-    logSection,
-    logInfo,
-    logSuccess,
-    logError
-} = require("../utils/logger");
+  confirmed: ["packed"],
 
-async function updateOrderStatus(
-    orderId,
-    status,
-    remarks,
-    updatedBy
-) {
+  packed: ["shipped"],
 
-    logSection("UPDATE ORDER STATUS");
+  shipped: ["delivered"],
 
-    logInfo("Order ID", orderId);
-    logInfo("Status", status);
+  delivered: [],
 
-    const { error } = await supabase
-        .from("orders")
-        .update({
+  cancelled: [],
+};
 
-            order_status: status,
-            remarks: remarks,
-            updated_at: new Date()
+function canChangeStatus(currentStatus, newStatus) {
+  currentStatus = (currentStatus || "").toLowerCase();
+  newStatus = (newStatus || "").toLowerCase();
 
-        })
-        .eq("id", orderId);
+  const allowed = ORDER_WORKFLOW[currentStatus] || [];
 
-    if (error) {
-
-        logError("Order status update failed");
-
-        console.error(error);
-
-        return false;
-
-    }
-
-    logSuccess("Order status updated");
-
-const timelineCreated = await addOrderTimeline(
-
-    orderId,
-
-    status,
-
-    remarks,
-
-    updatedBy
-
-);
-
-if (timelineCreated) {
-
-    logSuccess("Order timeline updated");
-
-} else {
-
-    logError("Order timeline update failed");
-
+  return allowed.includes(newStatus);
 }
 
-return true;
+function getNextStatuses(currentStatus) {
+  currentStatus = (currentStatus || "").toLowerCase();
+
+  return ORDER_WORKFLOW[currentStatus] || [];
 }
-
-
 
 module.exports = {
-    updateOrderStatus
+  canChangeStatus,
+  getNextStatuses,
 };

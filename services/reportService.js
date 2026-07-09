@@ -22,6 +22,17 @@ const getDashboardReport = async () => {
 
   if (customerError) throw customerError;
 
+      // Total Products in Catalog
+const { count: totalProducts, error: productCountError } =
+  await supabase
+    .from("product_master")
+    .select("*", {
+      count: "exact",
+      head: true,
+    });
+
+if (productCountError) throw productCountError;
+
   // Total Cost
   const { data: costData, error: costError } = await supabase
     .from("order_items")
@@ -108,6 +119,8 @@ const totalProductsSold = productData.reduce((sum, item) => {
     total_orders: orders.length,
 
     total_customers: totalCustomers,
+
+    total_products: totalProducts,
 
     total_cost: totalCost,
 
@@ -237,20 +250,31 @@ const getOrderStatusAnalytics = async () => {
 
   if (error) throw error;
 
+
   const statusSummary = {};
+
 
   data.forEach(order => {
 
-    if (!statusSummary[order.order_status]) {
-      statusSummary[order.order_status] = {
-        status: order.order_status,
+    const normalizedStatus = order.order_status
+      ?.toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase());
+
+
+    if (!statusSummary[normalizedStatus]) {
+
+      statusSummary[normalizedStatus] = {
+        status: normalizedStatus,
         orders: 0
       };
+
     }
 
-    statusSummary[order.order_status].orders++;
+
+    statusSummary[normalizedStatus].orders++;
 
   });
+
 
   return Object.values(statusSummary)
     .sort((a, b) => b.orders - a.orders);
@@ -355,11 +379,525 @@ const getInventoryAnalytics = async () => {
 
 };
 
+// ======================================
+// Studio Analytics
+// ======================================
+// ======================================
+// Studio Analytics
+// ======================================
+const getStudioAnalytics = async () => {
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+  studio_id,
+  studio_name,
+  grand_total,
+  studio_master (
+    studio_name
+  )
+`);
+
+  if (error) throw error;
+
+
+  const studioSummary = {};
+
+
+  data.forEach(order => {
+
+    const studioId = order.studio_id || "Unknown";
+
+
+    const studioName =
+  order.studio_master?.studio_name ||
+  order.studio_name ||
+  "Unknown";
+
+
+    if (!studioSummary[studioId]) {
+
+      studioSummary[studioId] = {
+
+        studio_id: studioId,
+
+        studio_name: studioName,
+
+        total_orders: 0,
+
+        total_revenue: 0
+
+      };
+
+    }
+
+
+    studioSummary[studioId].total_orders += 1;
+
+
+    studioSummary[studioId].total_revenue +=
+      Number(order.grand_total || 0);
+
+  });
+
+
+  return Object.values(studioSummary)
+    .sort(
+      (a, b) =>
+        b.total_revenue - a.total_revenue
+    );
+
+};
+
+// ======================================
+// Orders Report
+// ======================================
+
+const getOrdersReport = async () => {
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+      order_number,
+      order_date,
+      customer_name,
+      customer_mobile,
+      studio_name,
+      subtotal,
+      delivery_charge,
+      discount_amount,
+      grand_total,
+      payment_mode,
+      payment_status,
+      order_status,
+      remarks
+    `)
+    .order("order_date", {
+      ascending: false
+    });
+
+
+  if (error) throw error;
+
+
+  return data.map(order => ({
+
+    order_number: order.order_number,
+
+    order_date: order.order_date,
+
+    customer_name: order.customer_name,
+
+    customer_mobile: order.customer_mobile,
+
+    studio_name: order.studio_name,
+
+    subtotal: Number(order.subtotal || 0),
+
+    delivery_charge: Number(order.delivery_charge || 0),
+
+    discount_amount: Number(order.discount_amount || 0),
+
+    grand_total: Number(order.grand_total || 0),
+
+    payment_mode: order.payment_mode,
+
+    payment_status: order.payment_status,
+
+    order_status: order.order_status,
+
+    remarks: order.remarks || ""
+
+  }));
+
+};
+
+// ======================================
+// Inventory Report
+// ======================================
+
+const getInventoryReport = async () => {
+
+  const { data, error } = await supabase
+    .from("inventory_master")
+    .select(`
+      product_name,
+      total_stock,
+      available_stock,
+      inventory_status,
+      last_stock_update,
+      product_master (
+        sku,
+        category,
+        brand,
+        purchase_rate,
+        mrp,
+        nia_price,
+        nia_savings,
+        unit
+      )
+    `)
+    .order("product_name", {
+      ascending: true
+    });
+
+
+  if (error) throw error;
+
+
+  return data.map(item => ({
+
+    product_name: item.product_name,
+
+    sku: item.product_master?.sku || "",
+
+    category: item.product_master?.category || "",
+
+    brand: item.product_master?.brand || "",
+
+    total_stock: Number(item.total_stock || 0),
+
+    available_stock: Number(item.available_stock || 0),
+
+    inventory_status: item.inventory_status,
+
+    purchase_rate: Number(
+      item.product_master?.purchase_rate || 0
+    ),
+
+    mrp: Number(
+      item.product_master?.mrp || 0
+    ),
+
+    nia_price: Number(
+      item.product_master?.nia_price || 0
+    ),
+
+    nia_savings: Number(
+      item.product_master?.nia_savings || 0
+    ),
+
+    unit: item.product_master?.unit || "",
+
+    last_stock_update: item.last_stock_update
+
+  }));
+
+};
+
+
+// ======================================
+// Customer Report
+// ======================================
+
+const getCustomerReport = async () => {
+
+  const { data, error } = await supabase
+    .from("customer_master")
+    .select(`
+      customer_name,
+      mobile_number,
+      total_orders,
+      total_spent,
+      last_order_date,
+      preferred_language,
+      is_active,
+      created_at,
+      studio_name
+    `)
+    .order("created_at", {
+      ascending: false
+    });
+
+
+  if (error) throw error;
+
+
+  return data.map(customer => ({
+
+    customer_name: customer.customer_name || "",
+
+    mobile_number: customer.mobile_number || "",
+
+    studio_name: customer.studio_name || "",
+
+    total_orders: Number(
+      customer.total_orders || 0
+    ),
+
+    total_spent: Number(
+      customer.total_spent || 0
+    ),
+
+    average_order_value:
+      Number(customer.total_orders || 0) > 0
+        ?
+        Number(
+          (
+            Number(customer.total_spent || 0) /
+            Number(customer.total_orders || 0)
+          ).toFixed(2)
+        )
+        :
+        0,
+
+    last_order_date: customer.last_order_date,
+
+    preferred_language:
+      customer.preferred_language || "",
+
+    is_active:
+      customer.is_active ? "Active" : "Inactive",
+
+    created_at: customer.created_at
+
+  }));
+
+};
+
+
+// ======================================
+// Product Report
+// ======================================
+
+const getProductReport = async () => {
+
+  const { data, error } = await supabase
+    .from("product_master")
+    .select(`
+      product_name,
+      sku,
+      category,
+      brand,
+      purchase_rate,
+      mrp,
+      nia_price,
+      nia_savings,
+      unit,
+      is_active,
+      created_at
+    `)
+    .order("product_name", {
+      ascending: true
+    });
+
+
+  if (error) throw error;
+
+
+  return data.map(product => ({
+
+    product_name: product.product_name || "",
+
+    sku: product.sku || "",
+
+    category: product.category || "",
+
+    brand: product.brand || "",
+
+    purchase_rate: Number(
+      product.purchase_rate || 0
+    ),
+
+    mrp: Number(
+      product.mrp || 0
+    ),
+
+    nia_price: Number(
+      product.nia_price || 0
+    ),
+
+    nia_savings: Number(
+      product.nia_savings || 0
+    ),
+
+    unit: product.unit || "",
+
+    status:
+      product.is_active
+        ? "Active"
+        : "Inactive",
+
+    created_at: product.created_at
+
+  }));
+
+};
+
+
+// ======================================
+// Sales Report Export
+// ======================================
+
+// ======================================
+// Sales Report Export
+// ======================================
+
+const getSalesReport = async () => {
+
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+      
+      order_number,
+      order_date,
+      studio_name,
+      payment_mode,
+      payment_status,
+      order_status,
+
+      order_items (
+
+        product_code,
+        product_name,
+        quantity,
+        selling_price,
+        product_mrp,
+        nia_savings,
+        revenue,
+        cost,
+        gross_profit,
+        customer_name,
+        customer_mobile
+
+      )
+
+    `)
+    .order("order_date", {
+      ascending: false
+    });
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  const salesReport = [];
+
+
+  data.forEach(order => {
+
+
+    order.order_items.forEach(item => {
+
+
+      const revenue =
+        Number(item.revenue || 0);
+
+
+      const grossProfit =
+        Number(item.gross_profit || 0);
+
+
+      salesReport.push({
+
+        order_number:
+          order.order_number,
+
+
+        order_date:
+          order.order_date,
+
+
+        customer_name:
+          item.customer_name || "",
+
+
+        customer_mobile:
+          item.customer_mobile || "",
+
+
+        studio_name:
+          order.studio_name || "",
+
+
+        product_code:
+          item.product_code || "",
+
+
+        product_name:
+          item.product_name || "",
+
+
+        quantity:
+          Number(item.quantity || 0),
+
+
+        selling_price:
+          Number(item.selling_price || 0),
+
+
+        product_mrp:
+          Number(item.product_mrp || 0),
+
+
+        nia_savings:
+          Number(item.nia_savings || 0),
+
+
+        revenue,
+
+
+        cost:
+          Number(item.cost || 0),
+
+
+        gross_profit:
+          grossProfit,
+
+
+        gross_margin:
+          revenue > 0
+            ?
+            Number(
+              (
+                (grossProfit / revenue) * 100
+              ).toFixed(2)
+            )
+            :
+            0,
+
+
+        payment_mode:
+          order.payment_mode,
+
+
+        payment_status:
+          order.payment_status,
+
+
+        order_status:
+          order.order_status
+
+
+      });
+
+
+    });
+
+
+  });
+
+
+  return salesReport;
+
+
+};
+
+
 module.exports = {
     getDashboardReport,
     getSalesTrend,
     getTopProducts,
     getOrderStatusAnalytics,
     getCustomerAnalytics,
-    getInventoryAnalytics
+    getInventoryAnalytics,
+    getStudioAnalytics,
+    getOrdersReport,
+    getInventoryReport,
+      getCustomerReport,
+      getProductReport,
+       getSalesReport
 };

@@ -5,6 +5,10 @@ const { syncTable } = require("./syncEngine");
 const { syncProducts } = require("./inbound/productSync");
 const { startScheduler } = require("../core/scheduler");
 const {
+    syncDashboard
+} = require("../dashboardSyncService");
+
+const {
     syncInventory
 } = require("./inbound/inventorySync");
 
@@ -64,6 +68,10 @@ async function syncAll() {
             }
 
         }
+
+        console.log("\nSyncing Dashboard → Dashboard");
+
+await syncDashboard();
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 

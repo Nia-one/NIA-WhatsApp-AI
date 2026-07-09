@@ -116,11 +116,13 @@ return true;
 
     }
 
-    // ===============================
-    // Next Page
-    // ===============================
+    if (
+    userMessage === "7" ||
+    userMessage === "NEXT_PAGE"
+) {
 
-    if (userMessage === "7") {
+    console.log("🔥 NEXT PAGE CLICKED");
+console.log("CURRENT STATE:", state);
 
         const nextPage = await getNextPage(
             state.current_page || 1

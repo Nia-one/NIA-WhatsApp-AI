@@ -48,65 +48,81 @@ async function updateProduct(product) {
     console.log(product.product_name);
     console.log("--------------------------------");
 
-      // 👇 INSERT HERE
-    const { data: existingProduct, error: fetchError } = await supabase
-        .from("product_master")
-        .select("id")
-        .eq("id", product.id)
-        .single();
+
+    const { data: existingProduct, error: fetchError } =
+        await supabase
+            .from("product_master")
+            .select("id")
+            .eq("product_code", product.product_code)
+            .single();
+
 
     if (fetchError || !existingProduct) {
 
-        console.log(`⚠ Product not found: ${product.product_name}`);
+        console.log(
+            `⚠ Product not found: ${product.product_code}`
+        );
 
         return;
 
     }
 
-    // Existing update starts here
 
     const { error } = await supabase
         .from("product_master")
-const { data: existingProduct, error: fetchError } = await supabase
-    .from("product_master")
-    .select("id")
-    .eq("id", product.id)
-    .single();
-
-if (fetchError || !existingProduct) {
-
-    console.log(`⚠ Product not found: ${product.product_name}`);
-
-    return;
-
-}
-
         .update({
 
             product_code: product.product_code,
+
             sku: product.sku,
+
             product_name: product.product_name,
+
             category: product.category,
+
             brand: product.brand,
+
             description: product.description,
+
+            purchase_rate: Number(product.purchase_rate),
+
             mrp: Number(product.mrp),
+
             nia_price: Number(product.nia_price),
+
             nia_savings: Number(product.nia_savings),
+
             unit: product.unit,
+
             hsn_code: product.hsn_code,
+
             image_url: product.image_url,
-            is_active: String(product.is_active).toUpperCase() === "TRUE"
+
+
+            // Google Sheet TRUE/FALSE conversion
+            is_active:
+                String(product.is_active).toUpperCase() === "TRUE"
 
         })
-        .eq("id", product.id);
+        .eq(
+            "product_code",
+            product.product_code
+        );
+
 
     if (error) {
+
+        console.error(error);
 
         throw error;
 
     }
 
-    console.log("✅ Updated Successfully");
+
+    console.log(
+        "✅ Updated Successfully:",
+        product.product_code
+    );
 
 }
 

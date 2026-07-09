@@ -53,14 +53,8 @@ const PRODUCT_COMPARE_FIELDS = [
 
 ];
 const INVENTORY_COMPARE_FIELDS = [
-
-    "total_stock",
-    "reserved_stock",
-    "available_stock",
     "reorder_level",
-    "inventory_status",
     "warehouse_location"
-
 ];
 
 module.exports = {

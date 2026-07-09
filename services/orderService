@@ -25,8 +25,16 @@ const {
 } = require("./orderNumberService");
 
 const {
+    canChangeStatus
+} = require("./orderStatusService");
+
+const {
     updateCustomerAnalytics
 } = require("./customerAnalyticsService");
+
+const {
+    sendWhatsAppMessage
+} = require("./whatsappService");
 
 const {
     getCart,
@@ -39,6 +47,13 @@ const {
 } = require("./customerService");
 
 async function createOrder(customerMobile) {
+
+    
+
+    console.log("================================");
+console.log("CREATE ORDER CALLED");
+console.log("Mobile:", customerMobile);
+console.log("================================");
 
     // ======================================
     // Get or Create Guest
@@ -55,6 +70,12 @@ async function createOrder(customerMobile) {
 const customer = await getOrCreateCustomer(guest);
 
 console.log("Customer Details:", customer);
+
+console.log("================================");
+console.log("CUSTOMER STUDIO CHECK");
+console.log("Studio ID:", customer.studio_id);
+console.log("Studio Name:", customer.studio_name);
+console.log("================================");
 
     const cartItems = await getCart(customerMobile);
 
@@ -74,16 +95,48 @@ logInfo("Customer ID", customer.id);
     // Create Order
 const orderNumber = await generateOrderNumber();
 
+console.log("====================================");
+console.log("CUSTOMER OBJECT");
+console.log(customer);
+console.log("------------------------------------");
+console.log("customer.studio_id:", customer.studio_id);
+console.log("customer.studio_name:", customer.studio_name);
+console.log("====================================");
+
+// ======================================
+// Studio Snapshot
+// ======================================
+
+const studioId =
+    customer.studio_id ||
+    null;
+
+const studioName =
+    customer.studio_name ||
+    guest.studio_name ||
+    null;
+
+console.log("====================================");
+console.log("STUDIO SNAPSHOT");
+console.log("------------------------------------");
+console.log("Studio ID:", studioId);
+console.log("Studio Name:", studioName);
+console.log("Guest Studio:", guest.studio_name);
+console.log("Customer Studio:", customer.studio_name);
+console.log("====================================");
+
 const { data: order, error: orderError } = await supabase
     .from("orders")
-    .insert({
+    .insert({                
         order_number: orderNumber,
 
         customer_id: customer.id,
-        guest_id: guest.id,
-        studio_id: customer.studio_id || null,
+guest_id: guest.id,
 
-        // Customer Snapshot
+studio_id: studioId,
+        studio_name: studioName,
+
+// Customer Snapshot
 customer_name: customer.customer_name,
 customer_mobile: customer.mobile_number,
 
@@ -346,49 +399,97 @@ return {
     total
 };
 }
-
 async function getOrders(filters = {}) {
+
     const page = Number(filters.page) || 1;
     const limit = Number(filters.limit) || 20;
 
     const from = (page - 1) * limit;
     const to = from + limit - 1;
+
     let query = supabase
         .from("orders")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
+    // ============================
+    // Search
+    // ============================
+
+    if (filters.search && filters.search.trim() !== "") {
+    const keyword = filters.search.trim();
+
+    query = query.or(
+        `order_number.ilike.%${keyword}%,customer_name.ilike.%${keyword}%,customer_mobile.ilike.%${keyword}%`
+    );
+}
+
+    // ============================
+    // Status
+    // ============================
+
     if (filters.status) {
         query = query.eq("order_status", filters.status);
     }
 
-    const {
-    data,
-    error,
-    count
-} = await query
-    .range(from, to);
+    // ============================
+    // From Date
+    // ============================
 
-    if (error) {
-        throw error;
+    if (filters.fromDate) {
+        query = query.gte(
+            "created_at",
+            `${filters.fromDate}T00:00:00`
+        );
     }
 
-    return {
-    page,
-    limit,
-    total: count,
-    totalPages: Math.ceil(count / limit),
-    orders: data
-};
-}
+    // ============================
+    // To Date
+    // ============================
 
+    if (filters.toDate) {
+        query = query.lte(
+            "created_at",
+            `${filters.toDate}T23:59:59`
+        );
+    }
+
+    const {
+        data,
+        error,
+        count,
+    } = await query.range(from, to);
+
+if (error) {
+    console.log("================================");
+    console.log("GET ORDERS ERROR");
+    console.log(error);
+    console.log("================================");
+    throw error;
+}
+    return {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+        orders: data,
+    };
+}
 async function getOrderById(orderId) {
     const {
     data: order,
     error
 } = await supabase
     .from("orders")
-    .select("*")
+   .select(`
+    *,
+    order_items (
+        *,
+        product_master (
+            product_name
+        )
+    )
+`)
     .eq("id", orderId)
     .single();
         if (error) {
@@ -402,31 +503,117 @@ async function getOrderById(orderId) {
 
 
 async function updateOrderStatus(orderId, status) {
+
+    // ======================================
+// Get Current Order
+// ======================================
+
+const { data: existingOrder, error: fetchError } = await supabase
+    .from("orders")
+    .select("order_status, customer_name, customer_mobile, order_number")
+    .eq("id", orderId)
+    .single();
+
+    console.log("================================");
+console.log("EXISTING ORDER");
+console.log(existingOrder);
+console.log("================================");
+
+if (fetchError) {
+    throw fetchError;
+}
+
+// ======================================
+// Validate Workflow
+// ======================================
+
+const isAllowed = canChangeStatus(
+    existingOrder.order_status,
+    status
+);
+
+if (!isAllowed) {
+    throw new Error(
+        `Invalid status transition: ${existingOrder.order_status} → ${status}`
+    );
+}
+
+    // ======================================
+    // Update Order Status
+    // ======================================
+console.log("========= UPDATE PAYLOAD =========");
+console.log({
+    order_status: status,
+    updated_at: new Date().toISOString(),
+});
+
     const { data, error } = await supabase
     .from("orders")
     .update({
-        order_status: status
+        order_status: status,
+        updated_at: new Date().toISOString()
     })
     .eq("id", orderId)
     .select()
     .single();
-     if (error) {
+
+    if (error) {
         throw error;
     }
+
+   console.log("========= UPDATED RECORD =========");
+console.log(data);
+
+    // ======================================
+    // Save Status History
+    // ======================================
+
     const { error: historyError } = await supabase
-    .from("order_status_history")
-    .insert({
-        order_id: orderId,
-        status: status,
-        remarks: `Order status changed to ${status}`,
-        updated_by: "Admin"
-    });
+        .from("order_status_history")
+        .insert({
+            order_id: orderId,
+            status,
+            remarks: `Order status changed to ${status}`,
+            updated_by: "Admin"
+        });
 
-if (historyError) {
-    throw historyError;
-}
-      return data;
+    if (historyError) {
+        throw historyError;
+    }
 
+    // ======================================
+    // Send WhatsApp Notification
+    // ======================================
+
+    const message =
+`✅ NIA Essentials
+
+Hello ${data.customer_name},
+
+Your order *${data.order_number}* has been *${status}*.
+
+Thank you for shopping with NIA Essentials.`;
+
+setImmediate(async () => {
+    try {
+
+        await sendWhatsAppMessage(
+            data.customer_mobile,
+            message
+        );
+
+        console.log("✅ WhatsApp notification sent");
+
+    } catch (err) {
+
+        console.error("❌ WhatsApp notification failed");
+
+        console.error(err);
+
+    }
+});
+
+    return data;
 }
 module.exports = {
     createOrder,

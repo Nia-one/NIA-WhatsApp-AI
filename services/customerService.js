@@ -60,7 +60,7 @@ async function findCustomerByMobile(mobileNumber) {
     return data;
 }
 
-async function getStudioIdByCode(studioCode) {
+async function getStudioByCode(studioCode) {
 
     if (!studioCode) {
         return null;
@@ -68,7 +68,11 @@ async function getStudioIdByCode(studioCode) {
 
     const { data, error } = await supabase
         .from("studio_master")
-        .select("id")
+        .select(`
+            id,
+            studio_name,
+            studio_code
+        `)
         .eq("studio_code", studioCode)
         .single();
 
@@ -77,7 +81,7 @@ async function getStudioIdByCode(studioCode) {
         return null;
     }
 
-    return data.id;
+    return data;
 }
 
 
@@ -87,21 +91,24 @@ async function getStudioIdByCode(studioCode) {
 
 async function createCustomer(guest) {
 
-    const studioId = await getStudioIdByCode(
-        guest.studio_code
-    );
+ const studio = await getStudioByCode(
+    guest.studio_code
+);
 
-    const { data, error } = await supabase
-            .from("customer_master")
-        .insert({
-            mobile_number: guest.mobile_number,
-            customer_name: guest.guest_name,
-            guest_id: guest.id,
-            studio_id: studioId,
-studio_code: guest.studio_code
-        })
-        .select()
-        .single();
+const { data, error } = await supabase
+    .from("customer_master")
+    .insert({
+        mobile_number: guest.mobile_number,
+        customer_name: guest.guest_name,
+        guest_id: guest.id,
+
+        studio_id: studio?.id || null,
+        studio_name: studio?.studio_name || null,
+        studio_code: guest.studio_code
+
+    })
+    .select()
+    .single();
 
     if (error) {
         console.error("Create Customer Error:", error);
@@ -123,42 +130,44 @@ async function getOrCreateCustomer(guest) {
 
     if (customer) {
 
-    // Update missing fields from Guest Master
-    if (!customer.customer_name || !customer.studio_id) {
+        // Update missing fields from Guest Master
+        if (
+            !customer.customer_name ||
+            !customer.studio_id ||
+            !customer.studio_name
+        ) {
 
-        const studioId = await getStudioIdByCode(
-    guest.studio_code
-);
+            const studio = await getStudioByCode(
+                guest.studio_code
+            );
 
-const { data: updatedCustomer, error } = await supabase
-    .from("customer_master")
-    .update({
-        customer_name: guest.guest_name,
-        studio_code: guest.studio_code,
-        studio_id: studioId
-    })
-            .eq("id", customer.id)
-            .select()
-            .single();
+            const { data: updatedCustomer, error } = await supabase
+                .from("customer_master")
+                .update({
+                    customer_name: guest.guest_name,
+                    studio_code: guest.studio_code,
+                    studio_id: studio?.id || null,
+                    studio_name: studio?.studio_name || null
+                })
+                .eq("id", customer.id)
+                .select()
+                .single();
 
-        if (error) {
+            if (error) {
+                console.error("Customer Update Error:");
+                console.error(error);
+            } else {
+                return updatedCustomer;
+            }
+        }
 
-    console.error("Customer Update Error:");
-    console.error(error);
-
-} else {
-
-    
-    return updatedCustomer;
-}
+        // Always return the latest customer from database
+        return await findCustomerByMobile(
+            guest.mobile_number
+        );
     }
 
-    return customer;
-}
-
-    customer = await createCustomer(
-        guest
-    );
+    customer = await createCustomer(guest);
 
     return customer;
 }
@@ -236,24 +245,26 @@ async function getCustomerById(customerId) {
 // ======================================
 const getCustomerOrders = async (customerId) => {
   const { data, error } = await supabase
-    .from("orders")
-    .select(`
+  .from("orders")
+  .select(`
+      id,
       order_number,
       order_date,
       order_status,
       grand_total
-    `)
+  `)
     .eq("customer_id", customerId)
     .order("order_date", { ascending: false });
 
   if (error) throw error;
 
   return data.map(order => ({
-    order_number: order.order_number,
-    order_date: order.order_date,
-    status: order.order_status,
-    total_amount: order.grand_total
-  }));
+  id: order.id,
+  order_number: order.order_number,
+  order_date: order.order_date,
+  status: order.order_status,
+  total_amount: order.grand_total
+}));
 };
 
 // ======================================

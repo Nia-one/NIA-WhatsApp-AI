@@ -23,9 +23,11 @@ const rateLimit = require("express-rate-limit");
 
 const orderRoutes = require("./src/routes/orders");
 const inventoryRoutes = require("./src/routes/inventory");
+const authRoutes = require("./src/routes/auth");
 
 const customerRoutes = require("./src/routes/customers");
 const reportRoutes = require("./src/routes/reports");
+const reportExportRoutes = require("./src/routes/reportExportRoutes");
 const adminRoutes = require("./src/routes/admin");
 const errorHandler = require("./src/middleware/errorHandler");
 const { 
@@ -124,7 +126,16 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportRoutes);
-
+app.use("/api/guests", require("./src/routes/guests"));
+app.use("/api/studios", require("./src/routes/studios"));
+app.use(
+    "/api/reports/export",
+    reportExportRoutes
+);
+app.use(
+    "/api/auth",
+    authRoutes
+);
 
 
 const PORT = process.env.PORT || 3000;
@@ -162,6 +173,14 @@ app.get("/webhook", (req, res) => {
 });
 
 app.post("/webhook", async (req, res) => {
+
+    console.log("🔥 WEBHOOK HIT FROM WHATSAPP");
+
+    console.log("############################");
+console.log("WEBHOOK HIT");
+console.log(new Date().toISOString());
+console.log(JSON.stringify(req.body, null, 2));
+console.log("############################");
 
     try {
 
@@ -803,6 +822,12 @@ if (state.current_state === "CART") {
 
 if (state.current_state === "CHECKOUT") {
 
+       console.log("==================================");
+    console.log("SERVER ENTERED CHECKOUT FLOW");
+    console.log("State:", state.current_state);
+    console.log("User Message:", userMessage);
+    console.log("==================================");
+
     await checkoutFlow({
     mobile,
     userMessage,
@@ -949,27 +974,78 @@ async function sendProductList(mobile, page) {
     console.log("INSIDE sendProductList()");
     console.log("Products:", page.products.length);
     console.log(page.products.map(p => p.product_code));
+    console.log("CURRENT PAGE:", page.page);
+
+console.log("TOTAL PAGES:", page.totalPages);
+
+console.log("TOTAL PRODUCTS:", page.totalProducts);
+    console.log(
+        "Current Page:",
+        page.page,
+        "Total Pages:",
+        page.totalPages
+    );
     console.log("############################");
 
-    const rows = page.products.map(product => ({
-        id: `PRODUCT_${product.id}`,
-        title: product.product_name,
-        description: `${product.unit} • Nia ₹${product.nia_price} • Save ₹${product.nia_savings}`
-    }));
 
-    console.log("Rows:", rows.length);
+    const rows = page.products.map(product => ({
+    id: `PRODUCT_${product.id}`,
+    title: product.product_name,
+    description: `${product.unit} • Nia ₹${product.nia_price} • Save ₹${product.nia_savings}`
+}));
+
+
+// Dynamic Next button
+if (page.page < page.totalPages) {
+
+    rows.push({
+
+        id: "NEXT_PAGE",
+
+        title: "➡️ Next Products",
+
+        description: "View more products"
+
+    });
+
+}
+
+
+    
+
+}
+
+
+    console.log(
+        "Final Rows Sent:",
+        rows.length
+    );
+
+
+console.log("=================================");
+console.log("PRODUCT PAGE DEBUG");
+console.log("Current Page:", page.page);
+console.log("Total Pages:", page.totalPages);
+console.log("Total Products:", page.totalProducts);
+console.log("Products on Current Page:", page.products.length);
+console.log("=================================");
 
     await sendWhatsAppList(
         mobile,
+
         "🛍 *Choose a product from the list below:*",
+
         "View Products",
+
         [
             {
                 title: "Nia Essentials",
                 rows
             }
         ]
+
     );
+
 }
 
    

@@ -29,9 +29,10 @@ exports.updateInventory = async (req, res) => {
     try {
 
         const result = await inventoryService.updateInventory(
-            req.params.productId,
-            req.body.stock
-        );
+    req.params.productId,
+    req.body.stock,
+    req.body.reason
+);
 
         res.status(200).json({
             success: true,

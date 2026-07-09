@@ -4,7 +4,7 @@
 
 ## Introduction
 
-NIA AI ("we", "our", or "us") respects your privacy and is committed to protecting the information you share with us.
+Nia AI ("we", "our", or "us") respects your privacy and is committed to protecting the information you share with us.
 
 ## Information We Collect
 

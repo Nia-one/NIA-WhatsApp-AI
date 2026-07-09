@@ -150,11 +150,47 @@ const getInventoryAnalytics = async (req, res) => {
   }
 };
 
+// ======================================
+// Studio Analytics
+// ======================================
+
+const getStudioAnalytics = async (req, res) => {
+
+  try {
+
+    const result =
+      await reportService.getStudioAnalytics();
+
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "Error fetching studio analytics:",
+      error
+    );
+
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+};
+
 module.exports = {
   getDashboardReport,
   getSalesTrend,
   getTopProducts,
   getOrderStatusAnalytics,
   getCustomerAnalytics,
-  getInventoryAnalytics
+  getInventoryAnalytics,
+  getStudioAnalytics
 };

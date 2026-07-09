@@ -8,15 +8,79 @@ const {
     getTopProducts,
     getOrderStatusAnalytics,
     getCustomerAnalytics,
-    getInventoryAnalytics
+    getInventoryAnalytics,
+    getStudioAnalytics
 } = require("../controllers/reportController");
 
-router.get("/dashboard", getDashboardReport);
-router.get("/sales-trend", getSalesTrend);
-router.get("/top-products", getTopProducts);
-router.get("/order-status", getOrderStatusAnalytics);
-router.get("/customer-analytics", getCustomerAnalytics);
-router.get("/inventory-analytics", getInventoryAnalytics);
+
+// ======================================
+// Dashboard Analytics
+// ======================================
+
+router.get(
+    "/dashboard",
+    getDashboardReport
+);
+
+
+// ======================================
+// Sales Trend
+// ======================================
+
+router.get(
+    "/sales-trend",
+    getSalesTrend
+);
+
+
+// ======================================
+// Product Analytics
+// ======================================
+
+router.get(
+    "/top-products",
+    getTopProducts
+);
+
+
+// ======================================
+// Order Status Analytics
+// ======================================
+
+router.get(
+    "/order-status",
+    getOrderStatusAnalytics
+);
+
+
+// ======================================
+// Customer Analytics
+// ======================================
+
+router.get(
+    "/customer-analytics",
+    getCustomerAnalytics
+);
+
+
+// ======================================
+// Inventory Analytics
+// ======================================
+
+router.get(
+    "/inventory-analytics",
+    getInventoryAnalytics
+);
+
+
+// ======================================
+// Studio Analytics
+// ======================================
+
+router.get(
+    "/studio-analytics",
+    getStudioAnalytics
+);
 
 
 module.exports = router;

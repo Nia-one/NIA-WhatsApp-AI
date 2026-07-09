@@ -1,7 +1,7 @@
 function startScheduler(job, intervalMinutes = 2) {
 
     console.log("================================");
-    console.log("NIA Scheduler Started");
+    console.log("Nia Scheduler Started");
     console.log(`Running every ${intervalMinutes} minute(s)`);
     console.log("================================");
 

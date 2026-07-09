@@ -112,7 +112,24 @@ async function getInventory(filters = {}) {
 
         let query = supabase
     .from("inventory_master")
-    .select("*", { count: "exact" })
+    .select(
+        `
+        *,
+        product_master!inner (
+            sku,
+            category,
+            brand,
+            purchase_rate,
+            mrp,
+            nia_price,
+            nia_savings,
+            unit,
+            is_active
+        )
+        `,
+        { count: "exact" }
+    )
+    .eq("product_master.is_active", true)
     .order("product_name", {
         ascending: true
     });
@@ -142,39 +159,68 @@ async function getInventory(filters = {}) {
 };
 }
 
-async function updateInventory(productId, stock) {
+async function updateInventory(productId, stock, reason = "Manual Adjustment") {
+
+    console.log("================================");
+    console.log("UPDATE INVENTORY");
+    console.log("Product ID:", productId);
+    console.log("Stock Received:", stock);
+    console.log("Reason:", reason);
 
     // Fetch current inventory before update
-const { data: currentInventory, error: fetchError } = await supabase
-    .from("inventory_master")
-    .select("*")
-    .eq("product_id", productId)
-    .single();
+    const { data: currentInventory, error: fetchError } = await supabase
+        .from("inventory_master")
+        .select("*")
+        .eq("id", productId)
+         .maybeSingle();
 
-if (fetchError) {
-    throw fetchError;
-}
+         console.log("Product ID received:", productId);
+console.log("Inventory found:", currentInventory);
+console.log("Fetch Error:", fetchError);
 
+    console.log("Current Inventory:");
+    console.log(currentInventory);
 
-        let status = "In Stock";
+    console.log("Fetch Error:");
+    console.log(fetchError);
 
-    if (stock <= 0) {
-        status = "Out of Stock";
-    } else if (stock <= 5) {
-        status = "Low Stock";
+    if (fetchError) {
+        throw fetchError;
     }
 
-    const { data, error } = await supabase
-    .from("inventory_master")
-    .update({
-        total_stock: stock,
-        available_stock: stock,
+
+        // Add stock to existing inventory
+
+const updatedTotalStock =
+    currentInventory.total_stock + stock;
+
+const updatedAvailableStock =
+    currentInventory.available_stock + stock;
+
+let status = "In Stock";
+
+if (updatedAvailableStock <= 0) {
+    status = "Out of Stock";
+} else if (updatedAvailableStock <= currentInventory.reorder_level) {
+    status = "Low Stock";
+}
+
+        const { data, error } = await supabase
+        .from("inventory_master")
+        .update({
+        total_stock: updatedTotalStock,
+        available_stock: updatedAvailableStock,
         inventory_status: status,
         last_stock_update: new Date()
     })
-    .eq("product_id", productId)
+    .eq("id", productId)
     .select()
     .single();
+
+    console.log("================================");
+console.log("UPDATE RESPONSE");
+console.log(data);
+console.log("================================");
 
 if (error) {
     throw error;
@@ -189,9 +235,10 @@ const { error: historyError } = await supabase
         product_id: currentInventory.product_id,
         product_name: currentInventory.product_name,
         old_stock: currentInventory.total_stock,
-        new_stock: stock,
-        adjustment: stock - currentInventory.total_stock,
-        reason: "Manual Adjustment",
+        new_stock: updatedAvailableStock,
+
+adjustment: stock,
+        reason,
         updated_by: "Admin"
     });
 
@@ -211,8 +258,15 @@ async function getInventoryHistory() {
         .order("created_at", { ascending: false });
 
     if (error) {
-        throw error;
-    }
+    console.error("Inventory Update Error:");
+    console.error(error);
+    throw error;
+}
+
+console.log("================================");
+console.log("Inventory Updated Successfully");
+console.log(data);
+console.log("================================");
 
     return data;
 }
@@ -221,7 +275,13 @@ async function getInventorySummary() {
 
     const { data, error } = await supabase
         .from("inventory_master")
-        .select("*");
+        .select(`
+            *,
+            product_master!inner(
+                is_active
+            )
+        `)
+        .eq("product_master.is_active", true);
 
     if (error) {
         throw error;
