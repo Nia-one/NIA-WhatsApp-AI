@@ -3,6 +3,7 @@ const supabase = require("../../../config/supabase");
 const { SHEETS, TABLES } = require("../../core/constants");
 const { compareObjects } = require("../../core/comparer");
 const { INVENTORY_COMPARE_FIELDS } = require("../../core/constants");
+const crypto = require("crypto");
 
 async function getInventoryByProductCode(productCode) {
 
@@ -17,6 +18,48 @@ async function getInventoryByProductCode(productCode) {
     }
 
     return data;
+}
+
+async function createInventory(inventory) {
+
+    console.log("--------------------------------");
+    console.log(`Creating Inventory : ${inventory.product_code}`);
+    console.log("--------------------------------");
+
+// Find the Product ID from Product Master
+const { data: product, error: productError } = await supabase
+    .from(TABLES.PRODUCT_MASTER)
+    .select("id")
+    .eq("product_code", inventory.product_code)
+    .single();
+
+if (productError || !product) {
+    throw new Error(
+        `Product not found : ${inventory.product_code}`
+    );
+}
+
+    const { error } = await supabase
+        .from(TABLES.INVENTORY_MASTER)
+        .insert({
+            id: crypto.randomUUID(),
+            product_id: product.id,
+            product_code: inventory.product_code,
+            product_name: inventory.product_name,
+            total_stock: Number(inventory.total_stock) || 0,
+            reserved_stock: Number(inventory.reserved_stock) || 0,
+            available_stock: Number(inventory.available_stock) || 0,
+            reorder_level: Number(inventory.reorder_level) || 20,
+            inventory_status: inventory.inventory_status || "In Stock",
+            warehouse_location: inventory.warehouse_location || "Main Warehouse",
+            last_stock_update: new Date().toISOString()
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    console.log(`✅ Inventory Created : ${inventory.product_code}`);
 }
 
 async function updateInventory(inventory) {
@@ -90,9 +133,13 @@ async function syncInventory() {
         );
 
         if (!dbInventory) {
-            console.log(`⚠ Inventory not found : ${inventory.product_code}`);
-            continue;
-        }
+
+    console.log(`➕ Creating Inventory : ${inventory.product_code}`);
+
+    await createInventory(inventory);
+
+    continue;
+}
 
         const result = compareObjects(
             inventory,
