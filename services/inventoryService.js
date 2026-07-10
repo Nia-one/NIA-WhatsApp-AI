@@ -15,11 +15,22 @@ async function reduceInventory(productId, quantity) {
         return false;
     }
 
+console.log("Inventory Record Found:");
+console.log(inventory);
+
     // Check stock
     if (inventory.available_stock < quantity) {
         console.error("Insufficient stock");
         return false;
     }
+
+    console.log("================================");
+console.log("REDUCE INVENTORY");
+console.log("Product ID:", productId);
+console.log("Quantity:", quantity);
+console.log("Current Available Stock:", inventory.available_stock);
+console.log("Current Total Stock:", inventory.total_stock);
+console.log("================================");
 
     const available = inventory.available_stock - quantity;
     const total = inventory.total_stock - quantity;
@@ -32,22 +43,37 @@ async function reduceInventory(productId, quantity) {
         status = "Low Stock";
     }
 
-    const { error: updateError } = await supabase
+const { data: updatedInventory, error: updateError } = await supabase
         .from("inventory_master")
-        .update({
-            total_stock: total,
-            available_stock: available,
-            inventory_status: status,
-            last_stock_update: new Date()
-        })
-        .eq("product_id", productId);
+    .update({
+        total_stock: total,
+        available_stock: available,
+        inventory_status: status,
+        last_stock_update: new Date()
+    })
+    .eq("product_id", productId)
+    .select()
+    .single();
 
-    if (updateError) {
-        console.error(updateError);
-        return false;
-    }
+if (updateError) {
+    console.error("Inventory Update Error:");
+    console.error(updateError);
+    return false;
+}
 
-    return true;
+
+
+console.log("================================");
+console.log("INVENTORY UPDATED SUCCESSFULLY");
+console.log("New Available Stock:", available);
+console.log("New Total Stock:", total);
+
+console.log("Updated Inventory Record:");
+console.log(updatedInventory);
+
+console.log("================================");
+
+return true;
 }
 
 async function restoreInventory(productId, quantity) {
@@ -82,25 +108,35 @@ async function restoreInventory(productId, quantity) {
 
     }
 
-    const { error: updateError } = await supabase
-        .from("inventory_master")
-        .update({
-            total_stock: total,
-            available_stock: available,
-            inventory_status: status,
-            last_stock_update: new Date()
-        })
-        .eq("product_id", productId);
+    const { data: updatedInventory, error: updateError } = await supabase
+    .from("inventory_master")
+    .update({
+        total_stock: total,
+        available_stock: available,
+        inventory_status: status,
+        last_stock_update: new Date()
+    })
+    .eq("product_id", productId)
+    .select()
+    .single();
 
-    if (updateError) {
+if (updateError) {
+    console.error("Inventory Update Error:");
+    console.error(updateError);
+    return false;
+}
 
-        console.error(updateError);
+console.log("================================");
+console.log("INVENTORY UPDATED SUCCESSFULLY");
+console.log("New Available Stock:", available);
+console.log("New Total Stock:", total);
 
-        return false;
+console.log("Updated Inventory Record:");
+console.log(updatedInventory);
 
-    }
+console.log("================================");
 
-    return true;
+return true;
 
 }
 

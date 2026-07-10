@@ -297,6 +297,13 @@ nia_savings: product.data.nia_savings,
         console.log("================================");
 
         
+console.log("================================");
+console.log("INVENTORY REDUCTION");
+console.log("Product ID :", item.product_id);
+console.log("Quantity   :", item.quantity);
+console.log("================================");
+
+console.log("Inventory Updated:", inventoryUpdated);
 
         const inventoryUpdated = await reduceInventory(
             item.product_id,
