@@ -303,20 +303,18 @@ console.log("Product ID :", item.product_id);
 console.log("Quantity   :", item.quantity);
 console.log("================================");
 
+const inventoryUpdated = await reduceInventory(
+    item.product_id,
+    item.quantity
+);
+
 console.log("Inventory Updated:", inventoryUpdated);
 
-        const inventoryUpdated = await reduceInventory(
-            item.product_id,
-            item.quantity
-        );
-
-        
-
-        if (!inventoryUpdated) {
-            throw new Error(
-                `Inventory update failed for ${item.product_id}`
-            );
-        }
+if (!inventoryUpdated) {
+    throw new Error(
+        `Inventory update failed for ${item.product_id}`
+    );
+}
 
         logSuccess(
             `Inventory updated for ${item.product_id}`
