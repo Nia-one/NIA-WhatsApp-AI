@@ -48,6 +48,44 @@ export default function CustomerRow({
         </span>
       </td>
 
+{/* Studio */}
+<td className="px-6 py-4">
+
+    {customer.studio_name ? (
+
+        <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+            {customer.studio_name}
+        </span>
+
+    ) : (
+
+        <span className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+            Pending Mapping
+        </span>
+
+    )}
+
+</td>
+
+{/* Theatre */}
+<td className="px-6 py-4">
+
+    {customer.theatre_name ? (
+
+        <span className="text-slate-700">
+            {customer.theatre_name}
+        </span>
+
+    ) : (
+
+        <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+            Not Assigned
+        </span>
+
+    )}
+
+</td>
+
       {/* Orders */}
       <td className="px-6 py-4 text-center font-semibold">
         {customer.total_orders ?? 0}

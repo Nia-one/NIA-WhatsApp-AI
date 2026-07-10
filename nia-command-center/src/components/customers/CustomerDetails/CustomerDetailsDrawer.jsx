@@ -1,5 +1,5 @@
+import { useEffect } from "react";
 import { X, Loader2, AlertCircle } from "lucide-react";
-
 import { useCustomerDetails } from "../../../hooks/useCustomerDetails";
 
 import CustomerInfoCard from "./CustomerInfoCard";
@@ -16,6 +16,20 @@ export default function CustomerDetailsDrawer({
 }) {
 
   const customerId = customer?.id;
+
+  useEffect(() => {
+
+  if (open) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+
+}, [open]);
 
   const {
     customer: customerQuery,
@@ -48,7 +62,7 @@ export default function CustomerDetailsDrawer({
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 h-screen w-[500px] overflow-y-auto bg-white shadow-2xl">
+      <div className="absolute right-0 top-0 h-screen w-[650x] overflow-y-auto bg-white shadow-2xl">
 
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between border-b bg-white p-6">
@@ -76,10 +90,16 @@ export default function CustomerDetailsDrawer({
         <div className="space-y-6 p-6">
 
   {loading && (
-    <div className="flex items-center justify-center py-16">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-    </div>
-  )}
+  <div className="flex flex-col items-center justify-center py-16">
+
+    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+
+    <p className="mt-4 text-sm text-slate-500">
+      Loading customer details...
+    </p>
+
+  </div>
+)}
 
   {error && (
     <div className="rounded-xl border border-red-200 bg-red-50 p-6">

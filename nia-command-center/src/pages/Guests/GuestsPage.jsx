@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { useGuests } from "../../hooks/useGuests";
 
 import AddGuestModal from "../../components/guests/AddGuestModal";
 
-import { exportGuests } from "../../services/guestService";
+import ImportGuestPreviewModal from "../../components/guests/ImportGuestPreviewModal";
+
+import {
+    exportGuests,
+    importGuests,
+    downloadGuestTemplate
+} from "../../services/guestService";
+import * as XLSX from "xlsx";
 
 import {
     Search,
@@ -20,6 +27,13 @@ const GuestsPage = () => {
 
     const [search, setSearch] = useState("");
 
+    const [mappingFilter, setMappingFilter] = useState("all");
+
+const [importPreview, setImportPreview] = useState([]);
+const [showImportPreview, setShowImportPreview] = useState(false);
+
+    const fileInputRef = useRef(null);
+
 
 
     const {
@@ -28,13 +42,88 @@ const GuestsPage = () => {
         isError,
     } = useGuests();
 
+    // ==========================
+// Guest Mapping KPIs
+// ==========================
 
+const totalGuests = guests.length;
+
+const mappedGuests = guests.filter(
+    guest => guest.studio_code
+).length;
+
+const pendingGuests = guests.filter(
+    guest => !guest.studio_code
+).length;
+
+// ==========================
+// Import Guests
+// ==========================
+
+const handleImport = (event) => {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+
+        try {
+
+            const data = new Uint8Array(e.target.result);
+
+            const workbook = XLSX.read(data, {
+                type: "array"
+            });
+
+            console.log("Workbook:", workbook);
+
+            const sheetName = workbook.SheetNames[0];
+
+            console.log("Sheet:", sheetName);
+
+            const worksheet = workbook.Sheets[sheetName];
+
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+console.log("Imported Guests:", jsonData);
+
+console.log("First Row:", jsonData[0]);
+console.log("Setting Preview...");
+
+setImportPreview(jsonData);
+
+console.log("Opening Modal...");
+
+setShowImportPreview(true);
+
+console.log("showImportPreview should now be true");
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("Invalid Excel or CSV file");
+
+        }
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
+};
 
     // ==========================
     // Export Guests CSV
     // ==========================
 
+    
+
     const handleExport = async () => {
+
+        
 
     try {
 
@@ -139,56 +228,66 @@ const GuestsPage = () => {
 
 
 
+
     // ==========================
     // Search Filter
     // ==========================
 
-    const filteredGuests = guests.filter((guest) => {
+    // ==========================
+// Search + Mapping Filter
+// ==========================
 
+let filtered = guests;
 
-        const value =
-            search.toLowerCase();
+if (mappingFilter === "mapped") {
+    filtered = filtered.filter(
+        guest => guest.studio_code
+    );
+}
 
+if (mappingFilter === "pending") {
+    filtered = filtered.filter(
+        guest => !guest.studio_code
+    );
+}
 
+const filteredGuests = filtered.filter((guest) => {
 
-        return (
+    const value = search.toLowerCase();
 
-            guest.guest_name
-                ?.toLowerCase()
-                .includes(value)
+    return (
 
+        guest.guest_name
+            ?.toLowerCase()
+            .includes(value)
 
-            ||
+        ||
 
-            guest.mobile_number
-                ?.toString()
-                .includes(value)
+        guest.mobile_number
+            ?.toString()
+            .includes(value)
 
+        ||
 
-            ||
+        guest.guest_code
+            ?.toLowerCase()
+            .includes(value)
 
-            guest.guest_code
-                ?.toLowerCase()
-                .includes(value)
+        ||
 
+        guest.studio_name
+            ?.toLowerCase()
+            .includes(value)
 
-            ||
+        ||
 
-            guest.studio_name
-                ?.toLowerCase()
-                .includes(value)
+        guest.theatre_name
+            ?.toLowerCase()
+            .includes(value)
 
+    );
 
-            ||
-
-            guest.theatre_name
-                ?.toLowerCase()
-                .includes(value)
-
-        );
-
-
-    });
+});
 
 
 
@@ -301,6 +400,43 @@ const GuestsPage = () => {
 
                         />
 
+                        <div className="flex gap-2 mt-3">
+
+    <button
+        onClick={() => setMappingFilter("all")}
+        className={`px-4 py-2 rounded-lg border ${
+            mappingFilter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-white"
+        }`}
+    >
+        All
+    </button>
+
+    <button
+        onClick={() => setMappingFilter("mapped")}
+        className={`px-4 py-2 rounded-lg border ${
+            mappingFilter === "mapped"
+                ? "bg-green-600 text-white"
+                : "bg-white"
+        }`}
+    >
+        Mapped
+    </button>
+
+    <button
+        onClick={() => setMappingFilter("pending")}
+        className={`px-4 py-2 rounded-lg border ${
+            mappingFilter === "pending"
+                ? "bg-orange-500 text-white"
+                : "bg-white"
+        }`}
+    >
+        Pending Mapping
+    </button>
+
+</div>
+
 
                     </div>
 
@@ -317,24 +453,31 @@ const GuestsPage = () => {
 
 
 
-                    <button
+        <>
 
-                        className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-100"
+<button
+    onClick={downloadGuestTemplate}
+    className="px-4 py-2 border rounded-lg hover:bg-gray-100 flex items-center gap-2"
+>
+    📄 Template
+</button>
 
-                    >
+    <button
+        onClick={() => fileInputRef.current.click()}
+        className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-100"
+    >
+        <Upload size={18} />
+        Import
+    </button>
 
-                        <Upload size={18}/>
-
-                        Import
-
-
-                    </button>
-
-
-
-
-
-
+    <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls,.csv"
+        style={{ display: "none" }}
+        onChange={handleImport}
+    />
+</>
                     <button
 
 
@@ -388,6 +531,44 @@ const GuestsPage = () => {
 
 
 
+
+{/* ==========================
+    Guest Mapping KPIs
+========================== */}
+
+<div className="grid grid-cols-3 gap-4 mb-6">
+
+    <div className="bg-white rounded-lg shadow p-5 border">
+        <p className="text-gray-500 text-sm">
+            Total Guests
+        </p>
+
+        <h2 className="text-3xl font-bold mt-2">
+            {totalGuests}
+        </h2>
+    </div>
+
+    <div className="bg-white rounded-lg shadow p-5 border">
+        <p className="text-gray-500 text-sm">
+            Mapped Guests
+        </p>
+
+        <h2 className="text-3xl font-bold text-green-600 mt-2">
+            {mappedGuests}
+        </h2>
+    </div>
+
+    <div className="bg-white rounded-lg shadow p-5 border">
+        <p className="text-gray-500 text-sm">
+            Pending Mapping
+        </p>
+
+        <h2 className="text-3xl font-bold text-orange-600 mt-2">
+            {pendingGuests}
+        </h2>
+    </div>
+
+</div>
 
 
 
@@ -509,12 +690,13 @@ const GuestsPage = () => {
 
 
                         <tr
-
-                            key={guest.id}
-
-                            className="border-t"
-
-                        >
+    key={guest.id}
+    className={`border-t ${
+        !guest.studio_code
+            ? "bg-yellow-50"
+            : ""
+    }`}
+>
 
 
                             <td className="p-3">
@@ -538,18 +720,58 @@ const GuestsPage = () => {
 
 
                             <td className="p-3">
-                                {guest.theatre_name}
-                            </td>
+
+    {guest.theatre_name ? (
+
+        <span className="text-gray-800">
+            {guest.theatre_name}
+        </span>
+
+    ) : (
+
+        <span className="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+            Not Assigned
+        </span>
+
+    )}
+
+</td>
 
 
                             <td className="p-3">
-                                {guest.studio_code}
-                            </td>
+
+    {guest.studio_code ? (
+
+        <span className="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+            {guest.studio_code}
+        </span>
+
+    ) : (
+
+        <span className="inline-flex px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
+            ⚠ Pending Mapping
+        </span>
+
+    )}
+
+</td>
 
 
-                            <td className="p-3">
-                                {guest.studio_name}
-                            </td>
+                           <td className="p-3">
+
+    {guest.studio_name ? (
+
+        guest.studio_name
+
+    ) : (
+
+        <span className="inline-flex px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
+            Pending Mapping
+        </span>
+
+    )}
+
+</td>
 
 
                             <td className="p-3">
@@ -662,6 +884,42 @@ const GuestsPage = () => {
 
 
             />
+
+            <ImportGuestPreviewModal
+    isOpen={showImportPreview}
+    data={importPreview}
+    onClose={() => setShowImportPreview(false)}
+    onImport={async () => {
+
+    try {
+
+        const response = await importGuests(importPreview);
+
+console.log("IMPORT RESPONSE:", response);
+
+alert(
+`Guest Import Completed
+
+Imported : ${response.imported}
+Updated  : ${response.updated}
+Failed   : ${response.failed}`
+);
+
+
+        setShowImportPreview(false);
+
+        window.location.reload();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Guest import failed.");
+
+    }
+
+}}
+/>
 
 
 

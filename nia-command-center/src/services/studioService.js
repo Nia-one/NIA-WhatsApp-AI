@@ -10,3 +10,17 @@ export const getStudios = async () => {
     return data.data;
 
 };
+
+// =============================
+// Create Studio
+// =============================
+export const createStudio = async (payload) => {
+
+    const { data } = await api.post(
+        "/studios",
+        payload
+    );
+
+    return data.data;
+
+};

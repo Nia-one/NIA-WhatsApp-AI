@@ -457,12 +457,13 @@ const getOrdersReport = async () => {
 
   const { data, error } = await supabase
     .from("orders")
-    .select(`
+   .select(`
       order_number,
       order_date,
       customer_name,
       customer_mobile,
       studio_name,
+      theatre_name,
       subtotal,
       delivery_charge,
       discount_amount,
@@ -471,7 +472,7 @@ const getOrdersReport = async () => {
       payment_status,
       order_status,
       remarks
-    `)
+`)
     .order("order_date", {
       ascending: false
     });
@@ -491,6 +492,7 @@ const getOrdersReport = async () => {
     customer_mobile: order.customer_mobile,
 
     studio_name: order.studio_name,
+    theatre_name: order.theatre_name,
 
     subtotal: Number(order.subtotal || 0),
 
@@ -603,8 +605,9 @@ const getCustomerReport = async () => {
       preferred_language,
       is_active,
       created_at,
-      studio_name
-    `)
+      studio_name,
+      theatre_name
+`)
     .order("created_at", {
       ascending: false
     });
@@ -620,6 +623,8 @@ const getCustomerReport = async () => {
     mobile_number: customer.mobile_number || "",
 
     studio_name: customer.studio_name || "",
+
+    theatre_name: customer.theatre_name || "",
 
     total_orders: Number(
       customer.total_orders || 0
@@ -743,12 +748,12 @@ const getSalesReport = async () => {
       order_number,
       order_date,
       studio_name,
+      theatre_name,
       payment_mode,
       payment_status,
       order_status,
 
       order_items (
-
         product_code,
         product_name,
         quantity,
@@ -811,6 +816,9 @@ const getSalesReport = async () => {
 
         studio_name:
           order.studio_name || "",
+
+          theatre_name:
+  order.theatre_name || "",
 
 
         product_code:

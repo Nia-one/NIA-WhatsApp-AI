@@ -1,5 +1,5 @@
 export default function FinancialCard({ product }) {
-  const mrp = Number(product.product_master?.mrp || 0);
+  
   const niaPrice = Number(product.product_master?.nia_price || 0);
   const purchaseRate = Number(product.product_master?.purchase_rate || 0);
   const stock = Number(product.available_stock || 0);

@@ -1,4 +1,5 @@
 const supabase = require("../config/supabase");
+const { writeSheet } = require("./googleSheets/googleSheetsService");
 
 async function reduceInventory(productId, quantity) {
 
@@ -246,11 +247,74 @@ if (historyError) {
     console.error("Inventory history insert failed:", historyError);
 }
 
+// ======================================
+// Sync Inventory Master to Google Sheets
+// ======================================
+
+const { data: inventoryData, error: inventoryError } = await supabase
+  .from("inventory_master")
+  .select(`
+    id,
+    total_stock,
+    reserved_stock,
+    available_stock,
+    reorder_level,
+    inventory_status,
+    warehouse_location,
+    last_stock_update,
+    created_at,
+    updated_at,
+    product_code,
+    product_id,
+    product_name
+  `)
+  .order("product_code");
+
+if (!inventoryError) {
+
+  const values = [
+    [
+      "id",
+      "total_stock",
+      "reserved_stock",
+      "available_stock",
+      "reorder_level",
+      "inventory_status",
+      "warehouse_location",
+      "last_stock_update",
+      "created_at",
+      "updated_at",
+      "product_code",
+      "product_id",
+      "product_name"
+    ],
+
+    ...inventoryData.map(item => [
+      item.id,
+      item.total_stock,
+      item.reserved_stock,
+      item.available_stock,
+      item.reorder_level,
+      item.inventory_status,
+      item.warehouse_location,
+      item.last_stock_update,
+      item.created_at,
+      item.updated_at,
+      item.product_code,
+      item.product_id,
+      item.product_name
+    ])
+  ];
+
+  await writeSheet("Inventory_Master", values);
+
+  console.log("✅ Inventory synced to Google Sheet");
+}
 
 return data;
 }
-
 async function getInventoryHistory() {
+
 
     const { data, error } = await supabase
         .from("inventory_adjustment_history")

@@ -10,7 +10,7 @@ async function createGuest(mobileNumber, guestName) {
         .from("guest_master")
         .insert({
     mobile_number: mobileNumber,
-    guest_name: guestName
+    guest_name: guestName || "Guest Customer"
 })
         .select()
         .single();
@@ -69,10 +69,11 @@ async function getStudioByCode(studioCode) {
     const { data, error } = await supabase
         .from("studio_master")
         .select(`
-            id,
-            studio_name,
-            studio_code
-        `)
+    id,
+    studio_name,
+    theatre_name,
+    studio_code
+`)
         .eq("studio_code", studioCode)
         .single();
 
@@ -104,6 +105,7 @@ const { data, error } = await supabase
 
         studio_id: studio?.id || null,
         studio_name: studio?.studio_name || null,
+        theatre_name: studio?.theatre_name || null,
         studio_code: guest.studio_code
 
     })
@@ -130,25 +132,25 @@ async function getOrCreateCustomer(guest) {
 
     if (customer) {
 
-        // Update missing fields from Guest Master
-        if (
-            !customer.customer_name ||
-            !customer.studio_id ||
-            !customer.studio_name
-        ) {
-
+if (
+    !customer.customer_name ||
+    !customer.studio_id ||
+    !customer.studio_name ||
+    !customer.theatre_name
+) {
             const studio = await getStudioByCode(
                 guest.studio_code
             );
 
             const { data: updatedCustomer, error } = await supabase
                 .from("customer_master")
-                .update({
-                    customer_name: guest.guest_name,
-                    studio_code: guest.studio_code,
-                    studio_id: studio?.id || null,
-                    studio_name: studio?.studio_name || null
-                })
+              .update({
+    customer_name: guest.guest_name,
+    studio_code: guest.studio_code,
+    studio_id: studio?.id || null,
+    studio_name: studio?.studio_name || null,
+    theatre_name: studio?.theatre_name || null
+})
                 .eq("id", customer.id)
                 .select()
                 .single();
@@ -200,10 +202,13 @@ async function getCustomers() {
 
     const { data, error } = await supabase
         .from("customer_master")
-        .select(`
+      .select(`
     id,
     customer_name,
     mobile_number,
+    studio_code,
+    studio_name,
+    theatre_name,
     total_orders,
     total_spent,
     last_order_date,

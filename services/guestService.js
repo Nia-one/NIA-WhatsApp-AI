@@ -2,20 +2,36 @@ const supabase = require("../config/supabase");
 
 
 // Get all guests
+// Get all guests
 const getGuests = async () => {
 
-    const { data, error } = await supabase
-        .from("guest_master")
-        .select("*")
-        .order("guest_code", { ascending: true });
+    const batchSize = 1000;
+    let from = 0;
+    let allGuests = [];
 
+    while (true) {
 
-    if (error) {
-        throw error;
+        const { data, error } = await supabase
+            .from("guest_master")
+            .select("*")
+            .order("guest_code", { ascending: true })
+            .range(from, from + batchSize - 1);
+
+        if (error) {
+            throw error;
+        }
+
+        allGuests.push(...data);
+
+        // Stop when the last batch is smaller than 1000
+        if (data.length < batchSize) {
+            break;
+        }
+
+        from += batchSize;
     }
 
-
-    return data;
+    return allGuests;
 };
 
 

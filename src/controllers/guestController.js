@@ -1,5 +1,6 @@
 const guestService = require("../../services/guestService");
 const guestExportService = require("../../services/guestExportService");
+const guestImportService = require("../../services/guestImportService");
 
 
 // Get Guests
@@ -104,7 +105,45 @@ const exportGuests = async (req, res) => {
 
 };
 
+// Import Guests
+const importGuests = async (req, res) => {
 
+    try {
+
+        const result = await guestImportService.importGuests(req.body);
+
+        res.json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
+
+
+
+const path = require("path");
+
+const downloadGuestTemplate = (req, res) => {
+
+    const filePath = path.join(
+        __dirname,
+        "../../services/templates/Guest_Master_Template.xlsx"
+    );
+
+    res.download(filePath);
+
+};
 
 module.exports = {
 
@@ -113,5 +152,9 @@ module.exports = {
     createGuest,
 
     exportGuests,
+
+    importGuests,
+
+    downloadGuestTemplate,
 
 };

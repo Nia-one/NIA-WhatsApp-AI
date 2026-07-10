@@ -29,9 +29,17 @@ export default function CustomerTable({
                 Mobile
               </th>
 
-              <th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wide text-slate-600">
-                Orders
-              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-600">
+  Studio
+</th>
+
+<th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-600">
+  Theatre
+</th>
+
+<th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wide text-slate-600">
+  Orders
+</th>
 
               <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-600">
                 Lifetime Value
@@ -68,7 +76,7 @@ export default function CustomerTable({
               <tr>
 
                 <td
-                  colSpan={6}
+                  colSpan={8}
                   className="py-16"
                 >
 

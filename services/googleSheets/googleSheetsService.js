@@ -137,6 +137,67 @@ async function createSheet(sheetName) {
 
 }
 
+// ======================================
+// Sync Studio Master to Google Sheets
+// ======================================
+
+const supabase = require("../../config/supabase");
+
+async function syncStudioMaster() {
+
+    const { data, error } = await supabase
+        .from("studio_master")
+        .select("*")
+        .order("theatre_name", { ascending: true })
+        .order("studio_name", { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    const values = [
+
+        [
+            "id",
+            "studio_code",
+            "studio_name",
+            "theatre_code",
+            "theatre_name",
+            "city",
+            "state",
+            "address",
+            "contact_person",
+            "contact_number",
+            "is_active",
+            "created_at",
+            "updated_at"
+        ],
+
+        ...data.map(studio => [
+
+            studio.id,
+            studio.studio_code,
+            studio.studio_name,
+            studio.theatre_code,
+            studio.theatre_name,
+            studio.city,
+            studio.state,
+            studio.address,
+            studio.contact_person,
+            studio.contact_number,
+            studio.is_active,
+            studio.created_at,
+            studio.updated_at
+
+        ])
+
+    ];
+
+    await writeSheet("Studio_Master", values);
+
+    console.log("✅ Studio Master synced to Google Sheet");
+
+}
 
 module.exports = {
 
@@ -150,6 +211,8 @@ module.exports = {
 
     sheetExists,
 
-    createSheet
+    createSheet,
+
+    syncStudioMaster
 
 };

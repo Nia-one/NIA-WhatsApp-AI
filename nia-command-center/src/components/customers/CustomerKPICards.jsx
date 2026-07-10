@@ -1,6 +1,5 @@
 import {
   Users,
-  UserCheck,
   IndianRupee,
   ShoppingCart,
   TrendingUp,
@@ -35,10 +34,19 @@ export default function CustomerKPICards({
       ? totalRevenue / totalOrders
       : 0;
 
-  const activePercentage =
-    totalCustomers > 0
-      ? ((activeCustomers / totalCustomers) * 100).toFixed(1)
-      : 0;
+  
+      const repeatCustomers =
+  customers.filter(
+    (c) => Number(c.total_orders || 0) > 1
+  ).length;
+
+const repeatPercentage =
+  totalCustomers > 0
+    ? (
+        (repeatCustomers / totalCustomers) *
+        100
+      ).toFixed(1)
+    : 0;
 
   const cards = [
     {
@@ -49,22 +57,24 @@ export default function CustomerKPICards({
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
     },
-    {
-      title: "Active Customers",
-      value: activeCustomers.toLocaleString("en-IN"),
-      subtitle: `${activePercentage}% active`,
-      icon: UserCheck,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    {
-      title: "Lifetime Revenue",
-      value: `₹${totalRevenue.toLocaleString("en-IN")}`,
-      subtitle: `${totalOrders} total orders`,
-      icon: IndianRupee,
-      iconBg: "bg-emerald-100",
-      iconColor: "text-emerald-600",
-    },
+   {
+  title: "Repeat Customers",
+  value: repeatCustomers.toLocaleString("en-IN"),
+  subtitle: `${repeatPercentage}% repeat`,
+  icon: ShoppingCart,
+  iconBg: "bg-purple-100",
+  iconColor: "text-purple-600",
+},
+   {
+  title: "Lifetime Revenue",
+  value: `₹${totalRevenue.toLocaleString("en-IN")}`,
+  subtitle: `Avg ₹${averageOrderValue.toLocaleString("en-IN", {
+    maximumFractionDigits: 0,
+  })} / Order`,
+  icon: IndianRupee,
+  iconBg: "bg-emerald-100",
+  iconColor: "text-emerald-600",
+},
     {
       title: "Average Order Value",
       value: `₹${averageOrderValue.toLocaleString("en-IN", {

@@ -11,9 +11,25 @@ export default function OrdersTable({
         <thead className="bg-slate-100">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Order No.</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Customer</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Mobile</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Total</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  Customer
+</th>
+
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  Mobile
+</th>
+
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  Studio
+</th>
+
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  Theatre
+</th>
+
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  Total
+</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Status</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
           </tr>
@@ -23,7 +39,7 @@ export default function OrdersTable({
           {orders.length === 0 ? (
             <tr>
               <td
-                colSpan="6"
+                colSpan="8"
                 className="py-10 text-center text-slate-500"
               >
                 No orders found.

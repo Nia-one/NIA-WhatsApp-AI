@@ -116,6 +116,10 @@ const studioName =
     guest.studio_name ||
     null;
 
+    const theatreName =
+    customer.theatre_name ||
+    null;
+
 console.log("====================================");
 console.log("STUDIO SNAPSHOT");
 console.log("------------------------------------");
@@ -134,7 +138,8 @@ const { data: order, error: orderError } = await supabase
 guest_id: guest.id,
 
 studio_id: studioId,
-        studio_name: studioName,
+studio_name: studioName,
+theatre_name: theatreName,
 
 // Customer Snapshot
 customer_name: customer.customer_name,
