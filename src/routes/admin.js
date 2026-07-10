@@ -10,6 +10,11 @@ const {
 } = require("../controllers/adminController");
 
 const {
+  authenticate,
+  authorizeRoles,
+} = require("../../middleware/authMiddleware");
+
+const {
   validateOrderStatus,
 } = require("../validators/orderValidator");
 
@@ -23,6 +28,8 @@ router.get("/orders/:id", getOrderDetails);
 
 router.patch(
   "/orders/:id/status",
+  authenticate,
+  authorizeRoles("super_admin", "admin"),
   validateOrderStatus,
   updateOrderStatus
 );
