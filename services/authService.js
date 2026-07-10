@@ -2,7 +2,6 @@ const supabase = require("../config/supabase");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-
 // ======================================
 // Create Admin
 // ======================================
@@ -10,43 +9,71 @@ const jwt = require("jsonwebtoken");
 async function createAdmin(
     name,
     email,
-    password
+    password,
+    role = "admin"
 ) {
 
-    const passwordHash =
-        await bcrypt.hash(
-            password,
-            10
-        );
+    const passwordHash = await bcrypt.hash(
+        password,
+        10
+    );
 
+    const { data, error } = await supabase
+        .from("admin_users")
+        .insert({
 
-    const { data, error } =
-        await supabase
-            .from("admin_users")
-            .insert({
+            name,
 
-                name,
+            email,
 
-                email,
+            password_hash: passwordHash,
 
-                password_hash: passwordHash
+            role
 
-            })
-            .select()
-            .single();
-
+        })
+        .select()
+        .single();
 
     if (error) {
-
         throw error;
-
     }
-
 
     return data;
 
 }
 
+// ======================================
+// Update Admin Password
+// ======================================
+
+async function updateAdminPassword(
+    email,
+    newPassword
+) {
+
+    const passwordHash = await bcrypt.hash(
+        newPassword,
+        10
+    );
+
+    const { data, error } = await supabase
+        .from("admin_users")
+        .update({
+
+            password_hash: passwordHash
+
+        })
+        .eq("email", email)
+        .select()
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+
+}
 
 // ======================================
 // Login Admin
@@ -57,71 +84,61 @@ async function loginAdmin(
     password
 ) {
 
-
-    const { data, error } =
-        await supabase
-            .from("admin_users")
-            .select("*")
-            .eq("email", email)
-            .single();
-
+    const { data, error } = await supabase
+        .from("admin_users")
+        .select("*")
+        .eq("email", email)
+        .single();
 
     if (error) {
-
         throw new Error(
             "Invalid credentials"
         );
-
     }
 
-
-    const isValid =
-        await bcrypt.compare(
-            password,
-            data.password_hash
-        );
-
+    const isValid = await bcrypt.compare(
+        password,
+        data.password_hash
+    );
 
     if (!isValid) {
-
         throw new Error(
             "Invalid credentials"
         );
-
     }
-
 
     const token = jwt.sign(
-    {
-        id: data.id,
-        email: data.email,
-        role: data.role
-    },
-    process.env.JWT_SECRET,
-    {
-        expiresIn: "8h"
-    }
-);
+        {
+            id: data.id,
+            email: data.email,
+            role: data.role
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: "8h"
+        }
+    );
 
-return {
+    return {
 
-    token,
+        token,
 
-    user: {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role
-    }
+        user: {
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            role: data.role
+        }
 
-};
+    };
 
 }
-
 
 module.exports = {
 
     createAdmin,
+
+    updateAdminPassword,
 
     loginAdmin
 

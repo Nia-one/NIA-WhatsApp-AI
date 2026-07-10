@@ -308,8 +308,6 @@ const inventoryUpdated = await reduceInventory(
     item.quantity
 );
 
-console.log("Inventory Updated:", inventoryUpdated);
-
 if (!inventoryUpdated) {
     throw new Error(
         `Inventory update failed for ${item.product_id}`
