@@ -2,26 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginAdmin } from "../../services/authService";
 
-
 export default function LoginPage() {
 
     const navigate = useNavigate();
 
+    const [email, setEmail] = useState("");
 
-    const [email, setEmail] = useState(
-        "admin@nia.one"
-    );
-
-    const [password, setPassword] = useState(
-        "password123"
-    );
-
+    const [password, setPassword] = useState("");
 
     const [error, setError] = useState("");
 
     const [loading, setLoading] = useState(false);
-
-
 
     const handleLogin = async (e) => {
 
@@ -32,34 +23,29 @@ export default function LoginPage() {
             setLoading(true);
             setError("");
 
-
             const data = await loginAdmin(
                 email,
                 password
             );
-
 
             localStorage.setItem(
                 "nia_token",
                 data.token
             );
 
-
             localStorage.setItem(
                 "nia_user",
                 JSON.stringify(data.user)
             );
 
-
             navigate("/");
-
 
         } catch (err) {
 
             console.error(err);
 
             setError(
-                "Invalid email or password"
+                err?.response?.data?.message || "Invalid email or password"
             );
 
         }
@@ -71,35 +57,39 @@ export default function LoginPage() {
 
     };
 
-
+    // ==========================
+    // Debug
+    // ==========================
+    console.log("Email State:", email);
+    console.log("Password State:", password);
 
     return (
 
         <div className="min-h-screen flex items-center justify-center bg-slate-100">
 
-
             <div className="bg-white p-8 rounded-3xl shadow-lg w-96">
-
 
                 <h1 className="text-3xl font-bold text-slate-800 text-center">
                     Nia.one
                 </h1>
 
-
                 <p className="text-center text-slate-500 mt-2">
                     Command Center Login
                 </p>
 
-
                 <form
                     onSubmit={handleLogin}
+                    autoComplete="off"
                     className="mt-6 space-y-4"
                 >
-
 
                     <input
 
                         type="email"
+
+                        name="login_email"
+
+                        autoComplete="off"
 
                         value={email}
 
@@ -111,10 +101,13 @@ export default function LoginPage() {
 
                     />
 
-
                     <input
 
                         type="password"
+
+                        name="login_password"
+
+                        autoComplete="new-password"
 
                         value={password}
 
@@ -126,7 +119,6 @@ export default function LoginPage() {
 
                     />
 
-
                     {
                         error &&
                         <p className="text-red-500 text-sm">
@@ -134,8 +126,9 @@ export default function LoginPage() {
                         </p>
                     }
 
-
                     <button
+
+                        type="submit"
 
                         disabled={loading}
 
@@ -153,12 +146,9 @@ export default function LoginPage() {
 
                     </button>
 
-
                 </form>
 
-
             </div>
-
 
         </div>
 
