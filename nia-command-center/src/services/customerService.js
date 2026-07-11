@@ -25,3 +25,23 @@ export const getCustomerStats = async (id) => {
 
   return data.data;
 };
+
+// ======================================
+// Assign Studio
+// ======================================
+
+export const assignStudio = async (
+    customerId,
+    studioCode
+) => {
+
+    const { data } = await api.post(
+        `/customers/${customerId}/assign-studio`,
+        {
+            studio_code: studioCode,
+        }
+    );
+
+    return data.data;
+
+};

@@ -80,15 +80,16 @@ async function getStudioByCode(studioCode) {
     }
 
     const { data, error } = await supabase
-        .from("studio_master")
-        .select(`
-    id,
-    studio_name,
-    theatre_name,
-    studio_code
-`)
-        .eq("studio_code", studioCode)
-        .single();
+    .from("studio_master")
+    .select(`
+        id,
+        studio_code,
+        studio_name,
+        theatre_code,
+        theatre_name
+    `)
+    .eq("studio_code", studioCode)
+    .single();
 
     if (error) {
         console.error("Studio Lookup Error:", error);
@@ -346,6 +347,97 @@ async function updateGuestName(mobileNumber, guestName) {
 
 }
 
+// ======================================
+// Assign Studio
+// ======================================
+// ======================================
+// Assign Studio
+// ======================================
+
+async function assignStudio(customerId, studioCode) {
+
+    // Fetch Customer
+    const customer = await getCustomerById(customerId);
+
+    if (!customer) {
+        throw new Error("Customer not found.");
+    }
+
+    // Fetch Studio
+    const studio = await getStudioByCode(studioCode);
+
+    if (!studio) {
+        throw new Error("Studio not found.");
+    }
+
+    // ======================================
+    // Update Customer Master
+    // ======================================
+
+    const { data: updatedCustomer, error: customerError } = await supabase
+        .from("customer_master")
+        .update({
+            studio_id: studio.id,
+            studio_code: studio.studio_code,
+            studio_name: studio.studio_name,
+            theatre_code: studio.theatre_code,
+            theatre_name: studio.theatre_name,
+            updated_at: new Date()
+        })
+        .eq("id", customerId)
+        .select()
+        .single();
+
+    if (customerError) {
+        throw customerError;
+    }
+
+    // ======================================
+    // Update Guest Master
+    // ======================================
+
+    if (customer.guest_id) {
+
+        const { error: guestError } = await supabase
+            .from("guest_master")
+            .update({
+                studio_id: studio.id,
+                studio_code: studio.studio_code,
+                studio_name: studio.studio_name,
+                theatre_code: studio.theatre_code,
+                theatre_name: studio.theatre_name,
+                updated_at: new Date()
+            })
+            .eq("id", customer.guest_id);
+
+        if (guestError) {
+            throw guestError;
+        }
+    }
+
+    // ======================================
+    // Update Existing Orders
+    // ======================================
+
+    const { error: orderError } = await supabase
+        .from("orders")
+        .update({
+            studio_id: studio.id,
+            studio_name: studio.studio_name,
+            theatre_code: studio.theatre_code,
+            theatre_name: studio.theatre_name,
+            updated_at: new Date()
+        })
+        .eq("customer_id", customer.id)
+        .is("studio_id", null);
+
+    if (orderError) {
+        throw orderError;
+    }
+
+    return updatedCustomer;
+}
+
 module.exports = {
     findGuestByMobile,
     createGuest,
@@ -357,5 +449,6 @@ module.exports = {
     getCustomerById,
     getCustomerOrders,
     updateGuestName,
-    getCustomerStats
+    getCustomerStats,
+    assignStudio
 };

@@ -7,6 +7,7 @@ import CustomerStatsCard from "./CustomerStatsCard";
 import CustomerOrdersCard from "./CustomerOrdersCard";
 import CustomerAddressCard from "./CustomerAddressCard";
 import CustomerTimelineCard from "./CustomerTimelineCard";
+import AssignStudioCard from "./AssignStudioCard";
 
 export default function CustomerDetailsDrawer({
   open,
@@ -121,7 +122,9 @@ export default function CustomerDetailsDrawer({
     <>
       <CustomerInfoCard customer={customerData} />
 
-      <CustomerStatsCard stats={customerStats} />
+<AssignStudioCard customer={customerData} />
+
+<CustomerStatsCard stats={customerStats} />
 
       <CustomerOrdersCard
   orders={customerOrders}
