@@ -118,6 +118,7 @@ const studioName =
 
     const theatreName =
     customer.theatre_name ||
+    guest.theatre_name ||
     null;
 
 console.log("====================================");

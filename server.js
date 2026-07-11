@@ -189,6 +189,12 @@ console.log("############################");
                 ?.changes?.[0]
                 ?.value?.messages?.[0];
 
+                console.log("================================");
+console.log("MESSAGE ID :", message?.id);
+console.log("FROM       :", message?.from);
+console.log("TYPE       :", message?.type);
+console.log("================================");
+
         if (!message) {
             return res.sendStatus(200);
         }

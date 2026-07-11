@@ -32,8 +32,21 @@ async function getOrCreateGuest(mobileNumber) {
     let guest = await findGuestByMobile(mobileNumber);
 
     if (guest) {
+
+        console.log("================================");
+        console.log("EXISTING GUEST FOUND");
+        console.log("Guest ID :", guest.id);
+        console.log("Mobile   :", guest.mobile_number);
+        console.log("Guest    :", guest.guest_name);
+        console.log("================================");
+
         return guest;
     }
+
+    console.log("================================");
+    console.log("CREATING NEW GUEST");
+    console.log("Mobile :", mobileNumber);
+    console.log("================================");
 
     guest = await createGuest(mobileNumber);
 
@@ -180,13 +193,33 @@ if (
 
 async function findGuestByMobile(mobileNumber) {
 
+    // Normalize Mobile Number
+    const digits = String(mobileNumber).replace(/\D/g, "");
+
+    const last10 =
+        digits.length > 10
+            ? digits.slice(-10)
+            : digits;
+
+    const with91 = "91" + last10;
+
+    console.log("================================");
+    console.log("GUEST LOOKUP");
+    console.log("Incoming :", mobileNumber);
+    console.log("Last10   :", last10);
+    console.log("With91   :", with91);
+    console.log("================================");
+
     const { data, error } = await supabase
         .from("guest_master")
         .select("*")
-        .eq("mobile_number", mobileNumber)
-        .single();
+        .or(
+            `mobile_number.eq.${last10},mobile_number.eq.${with91}`
+        )
+        .limit(1)
+        .maybeSingle();
 
-    if (error && error.code !== "PGRST116") {
+    if (error) {
         console.error("Find Guest Error:", error);
         return null;
     }
