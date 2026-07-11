@@ -344,10 +344,9 @@ if (!inventoryUpdated) {
     // ======================================
 
     const analyticsUpdated =
-        await updateCustomerAnalytics(
-            customer.id,
-            total
-        );
+    await updateCustomerAnalytics(
+        customer.id
+    );
 
     if (!analyticsUpdated) {
         throw new Error(

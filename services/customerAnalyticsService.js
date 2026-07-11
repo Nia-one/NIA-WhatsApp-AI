@@ -1,29 +1,41 @@
 const supabase = require("../config/supabase");
 
-async function updateCustomerAnalytics(customerId, orderTotal) {
+async function updateCustomerAnalytics(customerId) {
+    const { data: orders, error } = await supabase
+    .from("orders")
+    .select("grand_total, created_at")
+    .eq("customer_id", customerId);
 
-    const { data: customer, error } = await supabase
-        .from("customer_master")
-        .select("total_orders,total_spent")
-        .eq("id", customerId)
-        .single();
+if (error) {
+    console.error(error);
+    return false;
+}
 
-    if (error) {
-        console.error(error);
-        return false;
-    }
+    const totalOrders = orders.length;
 
-    const totalOrders = (customer.total_orders || 0) + 1;
-    const totalSpent = Number(customer.total_spent || 0) + Number(orderTotal);
+const totalSpent = orders.reduce(
+    (sum, order) => sum + Number(order.grand_total || 0),
+    0
+);
+
+const lastOrderDate =
+    totalOrders > 0
+        ? orders
+              .sort(
+                  (a, b) =>
+                      new Date(b.created_at) -
+                      new Date(a.created_at)
+              )[0].created_at
+        : null;
 
     const { error: updateError } = await supabase
         .from("customer_master")
         .update({
-            total_orders: totalOrders,
-            total_spent: totalSpent,
-            last_order_date: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        })
+    total_orders: totalOrders,
+    total_spent: totalSpent,
+    last_order_date: lastOrderDate,
+    updated_at: new Date().toISOString()
+})
         .eq("id", customerId);
 
     if (updateError) {
