@@ -34,19 +34,39 @@ export default function CustomerCard({ order }) {
           </div>
         </div>
 
-        {order.studio && (
-          <div className="flex items-start gap-3">
-            <Building2 className="mt-0.5 h-4 w-4 text-slate-400" />
+        {(order.studio || order.theatre) && (
+  <div className="space-y-3">
 
-            <div>
-              <p className="text-xs text-slate-500">Studio</p>
+    {order.studio && (
+      <div className="flex items-start gap-3">
+        <Building2 className="mt-0.5 h-4 w-4 text-slate-400" />
 
-              <p className="font-medium text-slate-900">
-                {order.studio}
-              </p>
-            </div>
-          </div>
-        )}
+        <div>
+          <p className="text-xs text-slate-500">Studio</p>
+
+          <p className="font-medium text-slate-900">
+            {order.studio}
+          </p>
+        </div>
+      </div>
+    )}
+
+    {order.theatre && (
+      <div className="flex items-start gap-3">
+        <Building2 className="mt-0.5 h-4 w-4 text-slate-400" />
+
+        <div>
+          <p className="text-xs text-slate-500">Theatre</p>
+
+          <p className="font-medium text-slate-900">
+            {order.theatre}
+          </p>
+        </div>
+      </div>
+    )}
+
+  </div>
+)}
       </div>
     </div>
   );

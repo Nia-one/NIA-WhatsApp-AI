@@ -35,7 +35,8 @@ export function normalizeOrder(order) {
 
     mobile: order.customer_mobile || "-",
 
-    studio: order.studio_code || "",
+    studio: order.studio_name || "",
+theatre: order.theatre_name || "",
 
     grandTotal: Number(order.grand_total || 0),
 
