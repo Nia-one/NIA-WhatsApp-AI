@@ -92,8 +92,68 @@ const menuItems = [
   },
 ];
 
+const rolePermissions = {
+
+  super_admin: ["*"],
+
+  admin: [
+    "/",
+    "/orders",
+    "/inventory",
+    "/customers",
+    "/guests",
+    "/studios",
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios",
+    "/reports/notifications"
+  ],
+
+  founder: [
+    "/",
+    "/orders",
+    "/inventory",
+    "/customers",
+    "/guests",
+    "/studios",
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios"
+  ],
+
+  analytics: [
+    "/",
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios"
+  ]
+
+};
+
 export default function Sidebar() {
    const location = useLocation();
+
+   const user = JSON.parse(
+    localStorage.getItem("nia_user")
+);
+
+const role = user?.role || "analytics";
+
+const allowedRoutes =
+    rolePermissions[role] || [];
+
   return (
     <aside className="flex h-screen w-72 flex-col bg-slate-950 text-white">
       {/* Logo */}
@@ -109,7 +169,15 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
-        {menuItems.map((item) => {
+        {menuItems
+    .filter((item) => {
+
+        if (allowedRoutes.includes("*")) return true;
+
+        return allowedRoutes.includes(item.path);
+
+    })
+    .map((item) => {
           const Icon = item.icon;
 
           return (
