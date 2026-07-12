@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { NavLink, useLocation } from "react-router-dom";
+import { rolePermissions } from "../../config/permissions";
 
 const menuItems = [
   {
@@ -89,74 +90,23 @@ const menuItems = [
   },
 ];
 
-const rolePermissions = {
-
-  // Full system access
-  admin: ["*"],
-
-  // Operational team
-  operations: [
-    "/",
-    "/orders",
-    "/inventory",
-    "/customers",
-    "/guests",
-    "/studios",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-    "/reports/notifications",
-
-    "/settings",
-  ],
-
-  // Read-only business access
-  founder: [
-    "/",
-    "/orders",
-    "/inventory",
-    "/customers",
-    "/guests",
-    "/studios",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-  ],
-
-  // Analytics only
-  analytics: [
-    "/",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-  ],
-
-};
-
 export default function Sidebar() {
 
   const location = useLocation();
 
-  const user = JSON.parse(localStorage.getItem("nia_user"));
+  const user = JSON.parse(
+  localStorage.getItem("nia_user") || "{}"
+);
 
   const role = user?.role || "analytics";
 
   const allowedRoutes = rolePermissions[role] || [];
+
+  const visibleMenus = menuItems.filter((item) => {
+  if (allowedRoutes.includes("*")) return true;
+
+  return allowedRoutes.includes(item.path);
+});
 
   return (
     <aside className="flex h-screen w-72 flex-col bg-slate-950 text-white">
@@ -175,12 +125,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
 
-        {menuItems
-          .filter((item) => {
-            if (allowedRoutes.includes("*")) return true;
-            return allowedRoutes.includes(item.path);
-          })
-          .map((item) => {
+        {visibleMenus.map((item) => {
 
             const Icon = item.icon;
 

@@ -24,6 +24,7 @@ const rateLimit = require("express-rate-limit");
 const orderRoutes = require("./src/routes/orders");
 const inventoryRoutes = require("./src/routes/inventory");
 const authRoutes = require("./src/routes/auth");
+const usersRoutes = require("./src/routes/usersRoutes");
 
 const customerRoutes = require("./src/routes/customers");
 const reportRoutes = require("./src/routes/reports");
@@ -128,6 +129,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/guests", require("./src/routes/guests"));
 app.use("/api/studios", require("./src/routes/studios"));
+app.use("/api/admin/users", usersRoutes);
 app.use(
     "/api/reports/export",
     reportExportRoutes

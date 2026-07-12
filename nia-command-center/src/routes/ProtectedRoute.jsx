@@ -1,61 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-
-const rolePermissions = {
-  // Full system access
-  admin: ["*"],
-
-  // Operational team
-  operations: [
-    "/",
-    "/orders",
-    "/inventory",
-    "/customers",
-    "/guests",
-    "/studios",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-    "/reports/notifications",
-
-    "/settings",
-  ],
-
-  // Read-only business access
-  founder: [
-    "/",
-    "/orders",
-    "/inventory",
-    "/customers",
-    "/guests",
-    "/studios",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-  ],
-
-  // Analytics only
-  analytics: [
-    "/",
-
-    "/reports",
-    "/reports/sales",
-    "/reports/orders",
-    "/reports/customers",
-    "/reports/products",
-    "/reports/inventory",
-    "/reports/studios",
-  ],
-};
+import { rolePermissions } from "../config/permissions";
 
 export default function ProtectedRoute() {
   const location = useLocation();
@@ -63,23 +7,29 @@ export default function ProtectedRoute() {
   const token = localStorage.getItem("nia_token");
 
   const user = JSON.parse(
-  localStorage.getItem("nia_user") || "{}"
-);
+    localStorage.getItem("nia_user") || "{}"
+  );
 
+  // Not logged in
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
+  // Current user role
   const role = user?.role || "analytics";
 
+  // Allowed routes for this role
   const allowedRoutes = rolePermissions[role] || [];
 
+  // Current URL
   const currentPath = location.pathname;
 
+  // Check access
   const hasAccess =
     allowedRoutes.includes("*") ||
     allowedRoutes.includes(currentPath);
 
+  // Block unauthorized access
   if (!hasAccess) {
     return <Navigate to="/" replace />;
   }
