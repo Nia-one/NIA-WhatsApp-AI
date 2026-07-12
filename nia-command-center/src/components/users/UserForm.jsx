@@ -153,28 +153,36 @@ export default function UserForm({
       const response = await createUser(payload);
 
 
-
-      console.log(
-        "User Created:",
-        response
-      );
-
-
-
-      alert(
-        "User created successfully"
-      );
+console.log(
+  "User Created:",
+  response
+);
 
 
 
-      onSuccess();
+if (!response.success) {
+
+  alert(
+    response.message ||
+    "Failed to create user"
+  );
+
+  return;
+
+}
 
 
 
-      onClose();
+alert(
+  "User created successfully"
+);
 
 
 
+onSuccess();
+
+
+onClose();
     } catch (error) {
 
 
