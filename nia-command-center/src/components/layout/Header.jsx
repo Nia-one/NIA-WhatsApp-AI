@@ -5,6 +5,10 @@ export default function Header() {
 
   const navigate = useNavigate();
 
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+  {user?.name?.trim()?.charAt(0)?.toUpperCase() || "U"}
+</div>
+
 
   const handleLogout = () => {
 
@@ -52,19 +56,18 @@ export default function Header() {
         <div className="flex items-center gap-3 rounded-xl bg-slate-100 px-3 py-2">
 
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
-            A
-          </div>
+  {user?.name?.trim()?.charAt(0)?.toUpperCase() || "U"}
+</div>
 
-          <div>
+<div>
 
   <p className="font-medium text-slate-900">
-    Nia.one
+    {user?.name || "User"}
   </p>
 
   <p className="text-xs text-slate-500">
-    Management
+    {user?.email}
   </p>
-
 
   <button
     onClick={handleLogout}
@@ -72,7 +75,6 @@ export default function Header() {
   >
     Logout
   </button>
-
 
 </div>
 

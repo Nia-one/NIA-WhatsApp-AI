@@ -32,19 +32,16 @@ const menuItems = [
     label: "Customers",
     path: "/customers",
   },
-
   {
-  icon: Building2,
-  label: "Studios",
-  path: "/studios",
-},
-
-{
+    icon: Building2,
+    label: "Studios",
+    path: "/studios",
+  },
+  {
     icon: Users,
     label: "Guests",
     path: "/guests",
-},
-  
+  },
   {
     icon: BarChart3,
     label: "Reports & Analytics",
@@ -94,15 +91,18 @@ const menuItems = [
 
 const rolePermissions = {
 
-  super_admin: ["*"],
+  // Full system access
+  admin: ["*"],
 
-  admin: [
+  // Operational team
+  operations: [
     "/",
     "/orders",
     "/inventory",
     "/customers",
     "/guests",
     "/studios",
+
     "/reports",
     "/reports/sales",
     "/reports/orders",
@@ -110,9 +110,12 @@ const rolePermissions = {
     "/reports/products",
     "/reports/inventory",
     "/reports/studios",
-    "/reports/notifications"
+    "/reports/notifications",
+
+    "/settings",
   ],
 
+  // Read-only business access
   founder: [
     "/",
     "/orders",
@@ -120,42 +123,44 @@ const rolePermissions = {
     "/customers",
     "/guests",
     "/studios",
+
     "/reports",
     "/reports/sales",
     "/reports/orders",
     "/reports/customers",
     "/reports/products",
     "/reports/inventory",
-    "/reports/studios"
+    "/reports/studios",
   ],
 
+  // Analytics only
   analytics: [
     "/",
+
     "/reports",
     "/reports/sales",
     "/reports/orders",
     "/reports/customers",
     "/reports/products",
     "/reports/inventory",
-    "/reports/studios"
-  ]
+    "/reports/studios",
+  ],
 
 };
 
 export default function Sidebar() {
-   const location = useLocation();
 
-   const user = JSON.parse(
-    localStorage.getItem("nia_user")
-);
+  const location = useLocation();
 
-const role = user?.role || "analytics";
+  const user = JSON.parse(localStorage.getItem("nia_user"));
 
-const allowedRoutes =
-    rolePermissions[role] || [];
+  const role = user?.role || "analytics";
+
+  const allowedRoutes = rolePermissions[role] || [];
 
   return (
     <aside className="flex h-screen w-72 flex-col bg-slate-950 text-white">
+
       {/* Logo */}
       <div className="border-b border-slate-800 p-8">
         <h1 className="text-3xl font-bold tracking-wide text-blue-400">
@@ -169,45 +174,42 @@ const allowedRoutes =
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
+
         {menuItems
-    .filter((item) => {
+          .filter((item) => {
+            if (allowedRoutes.includes("*")) return true;
+            return allowedRoutes.includes(item.path);
+          })
+          .map((item) => {
 
-        if (allowedRoutes.includes("*")) return true;
+            const Icon = item.icon;
 
-        return allowedRoutes.includes(item.path);
+            const isDashboard = item.path === "/";
+            const isReports = item.path === "/reports";
 
-    })
-    .map((item) => {
-          const Icon = item.icon;
+            const isActive = isDashboard
+              ? location.pathname === "/"
+              : isReports
+              ? location.pathname === "/reports"
+              : location.pathname === item.path;
 
-          return (
-            <NavLink
-              key={item.label}
-              to={item.path}
-              className={() => {
-  const isDashboard = item.path === "/";
-const isReports = item.path === "/reports";
-
-const isActive = isDashboard
-  ? location.pathname === "/"
-  : isReports
-  ? location.pathname === "/reports"
-  : location.pathname === item.path;
-
-  return `mb-2 flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
-    isActive
-      ? "bg-blue-600 text-white shadow-lg"
-      : "text-slate-300 hover:bg-slate-800 hover:text-white"
-  }`;
-}}
-            >
-              <Icon size={20} />
-              <span className="text-sm font-medium">
-                {item.label}
-              </span>
-            </NavLink>
-          );
-        })}
+            return (
+              <NavLink
+                key={item.label}
+                to={item.path}
+                className={`mb-2 flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-sm font-medium">
+                  {item.label}
+                </span>
+              </NavLink>
+            );
+          })}
       </nav>
 
       {/* Footer */}
@@ -220,6 +222,7 @@ const isActive = isDashboard
           Version 1.0
         </p>
       </div>
+
     </aside>
   );
 }

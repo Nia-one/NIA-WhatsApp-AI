@@ -1,5 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 
+{/* Settings */}
+import SettingsPage from "./pages/Settings/SettingsPage";
+import UsersPage from "./pages/Settings/UsersPage";
+import RolesPage from "./pages/Settings/RolesPage";
+import SystemConfigPage from "./pages/Settings/SystemConfigPage";
+import AuditLogsPage from "./pages/Settings/AuditLogsPage";
+
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -50,6 +57,31 @@ function App() {
             path="/"
             element={<DashboardPage />}
           />
+
+<Route
+  path="/settings"
+  element={<SettingsPage />}
+/>
+
+<Route
+  path="/settings/users"
+  element={<UsersPage />}
+/>
+
+<Route
+  path="/settings/roles"
+  element={<RolesPage />}
+/>
+
+<Route
+  path="/settings/system"
+  element={<SystemConfigPage />}
+/>
+
+<Route
+  path="/settings/audit"
+  element={<AuditLogsPage />}
+/>
 
           {/* Main Modules */}
           <Route

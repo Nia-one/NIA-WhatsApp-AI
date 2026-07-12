@@ -1,82 +1,86 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const rolePermissions = {
+  // Full system access
+  admin: ["*"],
 
-    super_admin: ["*"],
+  // Operational team
+  operations: [
+    "/",
+    "/orders",
+    "/inventory",
+    "/customers",
+    "/guests",
+    "/studios",
 
-    admin: [
-        "/",
-        "/orders",
-        "/inventory",
-        "/customers",
-        "/guests",
-        "/studios",
-        "/reports",
-        "/reports/sales",
-        "/reports/orders",
-        "/reports/customers",
-        "/reports/products",
-        "/reports/inventory",
-        "/reports/studios",
-        "/reports/notifications"
-    ],
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios",
+    "/reports/notifications",
 
-    founder: [
-        "/",
-        "/orders",
-        "/inventory",
-        "/customers",
-        "/guests",
-        "/studios",
-        "/reports",
-        "/reports/sales",
-        "/reports/orders",
-        "/reports/customers",
-        "/reports/products",
-        "/reports/inventory",
-        "/reports/studios"
-    ],
+    "/settings",
+  ],
 
-    analytics: [
-        "/",
-        "/reports",
-        "/reports/sales",
-        "/reports/orders",
-        "/reports/customers",
-        "/reports/products",
-        "/reports/inventory",
-        "/reports/studios"
-    ]
+  // Read-only business access
+  founder: [
+    "/",
+    "/orders",
+    "/inventory",
+    "/customers",
+    "/guests",
+    "/studios",
 
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios",
+  ],
+
+  // Analytics only
+  analytics: [
+    "/",
+
+    "/reports",
+    "/reports/sales",
+    "/reports/orders",
+    "/reports/customers",
+    "/reports/products",
+    "/reports/inventory",
+    "/reports/studios",
+  ],
 };
 
 export default function ProtectedRoute() {
+  const location = useLocation();
 
-    const token = localStorage.getItem("nia_token");
+  const token = localStorage.getItem("nia_token");
 
-    const user = JSON.parse(
-        localStorage.getItem("nia_user")
-    );
+  const user = JSON.parse(localStorage.getItem("nia_user"));
 
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-    const role = user?.role || "analytics";
+  const role = user?.role || "analytics";
 
-    const allowedRoutes =
-        rolePermissions[role] || [];
+  const allowedRoutes = rolePermissions[role] || [];
 
-    const currentPath =
-        window.location.pathname;
+  const currentPath = location.pathname;
 
-    if (
-        !allowedRoutes.includes("*") &&
-        !allowedRoutes.includes(currentPath)
-    ) {
-        return <Navigate to="/" replace />;
-    }
+  const hasAccess =
+    allowedRoutes.includes("*") ||
+    allowedRoutes.includes(currentPath);
 
-    return <Outlet />;
+  if (!hasAccess) {
+    return <Navigate to="/" replace />;
+  }
 
+  return <Outlet />;
 }
