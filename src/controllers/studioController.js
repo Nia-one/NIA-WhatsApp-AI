@@ -61,7 +61,47 @@ const createStudio = async (req, res) => {
 
 };
 
+// ==========================================
+// Update Studio
+// ==========================================
+
+const updateStudio = async (req, res) => {
+
+    try {
+
+        const studio = await studioService.updateStudio(
+            req.params.id,
+            req.body
+        );
+
+        res.json({
+
+            success: true,
+
+            message: "Studio updated successfully",
+
+            data: studio,
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: error.message,
+
+        });
+
+    }
+
+};
+
 module.exports = {
     getStudios,
     createStudio,
+    updateStudio,
 };

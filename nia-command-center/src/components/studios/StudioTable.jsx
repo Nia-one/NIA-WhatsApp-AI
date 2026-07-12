@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, ArrowUpDown } from "lucide-react";
+import { Eye, Pencil, ArrowUpDown } from "lucide-react";
 
 import StudioDrawer from "./StudioDrawer";
 
@@ -34,7 +34,10 @@ function SortHeader({
     );
 }
 
-export default function StudioTable({ studios = [] }) {
+export default function StudioTable({
+    studios = [],
+    onEdit,
+}) {
 
     const [selectedStudio, setSelectedStudio] = useState(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -205,16 +208,29 @@ export default function StudioTable({ studios = [] }) {
 
                                     <td className="p-4 text-center">
 
-                                        <button
-                                            type="button"
-                                            onClick={() => openDrawer(studio)}
-                                            className="rounded-lg p-2 transition hover:bg-slate-100"
-                                            title="View Studio"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
+    <div className="flex justify-center gap-2">
 
-                                    </td>
+        <button
+            type="button"
+            onClick={() => onEdit(studio)}
+            className="rounded-lg p-2 transition hover:bg-blue-100"
+            title="Edit Studio"
+        >
+            <Pencil size={18} />
+        </button>
+
+        <button
+            type="button"
+            onClick={() => openDrawer(studio)}
+            className="rounded-lg p-2 transition hover:bg-slate-100"
+            title="View Studio"
+        >
+            <Eye size={18} />
+        </button>
+
+    </div>
+
+</td>
 
                                 </tr>
 

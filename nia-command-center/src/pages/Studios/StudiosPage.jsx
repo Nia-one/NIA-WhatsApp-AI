@@ -29,6 +29,10 @@ export default function StudiosPage() {
 
 const [addStudioOpen, setAddStudioOpen] = useState(false);
 
+const [isEdit, setIsEdit] = useState(false);
+
+const [selectedStudio, setSelectedStudio] = useState(null);
+
     const [selectedCity, setSelectedCity] = useState("");
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -172,8 +176,17 @@ const [addStudioOpen, setAddStudioOpen] = useState(false);
             </div>
 
             <StudioTable
-                studios={paginatedStudios}
-            />
+    studios={paginatedStudios}
+    onEdit={(studio) => {
+
+        setSelectedStudio(studio);
+
+        setIsEdit(true);
+
+        setAddStudioOpen(true);
+
+    }}
+/>  
 
             <Pagination
 
@@ -191,7 +204,15 @@ const [addStudioOpen, setAddStudioOpen] = useState(false);
 
             <AddStudioModal
     open={addStudioOpen}
-    onClose={() => setAddStudioOpen(false)}
+    onClose={() => {
+
+        setAddStudioOpen(false);
+
+        setIsEdit(false);
+
+        setSelectedStudio(null);
+
+    }}
     onSuccess={() => {
 
         queryClient.invalidateQueries({
@@ -201,6 +222,8 @@ const [addStudioOpen, setAddStudioOpen] = useState(false);
         });
 
     }}
+    isEdit={isEdit}
+    studio={selectedStudio}
 />
 
         </div>

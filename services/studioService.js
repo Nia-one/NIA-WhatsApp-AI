@@ -114,10 +114,82 @@ const createStudio = async (studioData) => {
 
 };
 
+// ==========================================
+// Update Studio
+// ==========================================
+
+const updateStudio = async (id, studioData) => {
+
+    // ===========================
+    // Duplicate Studio Name
+    // ===========================
+
+    const { data: existingName } = await supabase
+        .from("studio_master")
+        .select("id")
+        .eq("studio_name", studioData.studio_name)
+        .neq("id", id)
+        .maybeSingle();
+
+    if (existingName) {
+
+        throw new Error("Studio Name already exists.");
+
+    }
+
+    // ===========================
+    // Update Studio
+    // ===========================
+
+    const payload = {
+
+        studio_name: studioData.studio_name,
+
+        theatre_name: studioData.theatre_name,
+
+        city: studioData.city,
+
+        state: studioData.state,
+
+        address: studioData.address || null,
+
+        contact_person: studioData.contact_person || null,
+
+        contact_number: studioData.contact_number || null,
+
+    };
+
+    const { data, error } = await supabase
+        .from("studio_master")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+
+        throw error;
+
+    }
+
+    // ===========================
+    // Sync Google Sheet
+    // ===========================
+
+    await syncStudioMaster();
+
+    console.log("✅ Studio Master synced.");
+
+    return data;
+
+};
+
 module.exports = {
 
     getStudios,
 
     createStudio,
+
+    updateStudio,
 
 };

@@ -24,3 +24,17 @@ export const createStudio = async (payload) => {
     return data.data;
 
 };
+
+// =============================
+// Update Studio
+// =============================
+export const updateStudio = async (id, payload) => {
+
+    const { data } = await api.put(
+        `/studios/${id}`,
+        payload
+    );
+
+    return data.data;
+
+};

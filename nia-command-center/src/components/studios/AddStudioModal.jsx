@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { createStudio } from "../../services/studioService";
+import {
+    createStudio,
+    updateStudio,
+} from "../../services/studioService";
 
 const initialForm = {
     studio_code: "",
@@ -19,11 +22,47 @@ export default function AddStudioModal({
     open,
     onClose,
     onSuccess,
+    isEdit = false,
+    studio = null,
 }) {
 
     const [formData, setFormData] = useState(initialForm);
 
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+
+        if (open && isEdit && studio) {
+
+            setFormData({
+
+                studio_code: studio.studio_code || "",
+
+                studio_name: studio.studio_name || "",
+
+                theatre_code: studio.theatre_code || "",
+
+                theatre_name: studio.theatre_name || "",
+
+                city: studio.city || "",
+
+                state: studio.state || "",
+
+                address: studio.address || "",
+
+                contact_person: studio.contact_person || "",
+
+                contact_number: studio.contact_number || "",
+
+            });
+
+        } else if (open) {
+
+            setFormData(initialForm);
+
+        }
+
+    }, [open, isEdit, studio]);
 
     if (!open) return null;
 
@@ -47,9 +86,19 @@ export default function AddStudioModal({
 
             setLoading(true);
 
-            await createStudio(formData);
+            if (isEdit) {
 
-            toast.success("Studio created successfully.");
+                await updateStudio(studio.id, formData);
+
+                toast.success("Studio updated successfully.");
+
+            } else {
+
+                await createStudio(formData);
+
+                toast.success("Studio created successfully.");
+
+            }
 
             setFormData(initialForm);
 
@@ -81,7 +130,7 @@ export default function AddStudioModal({
             <div className="w-full max-w-3xl rounded-2xl bg-white p-8">
 
                 <h2 className="mb-6 text-2xl font-bold">
-                    Add Studio
+                    {isEdit ? "Edit Studio" : "Add Studio"}
                 </h2>
 
                 <form
@@ -96,6 +145,7 @@ export default function AddStudioModal({
                         onChange={handleChange}
                         className="rounded-lg border p-3"
                         required
+                        disabled={isEdit}
                     />
 
                     <input
@@ -114,6 +164,7 @@ export default function AddStudioModal({
                         onChange={handleChange}
                         className="rounded-lg border p-3"
                         required
+                        disabled={isEdit}
                     />
 
                     <input
@@ -182,7 +233,11 @@ export default function AddStudioModal({
                             disabled={loading}
                             className="rounded-lg bg-blue-600 px-6 py-2 text-white"
                         >
-                            {loading ? "Saving..." : "Save Studio"}
+                            {loading
+                                ? "Saving..."
+                                : isEdit
+                                    ? "Update Studio"
+                                    : "Save Studio"}
                         </button>
 
                     </div>
