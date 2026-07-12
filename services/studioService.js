@@ -184,6 +184,41 @@ const updateStudio = async (id, studioData) => {
 
 };
 
+// ==========================================
+// Update Studio Status
+// ==========================================
+
+const updateStudioStatus = async (id, isActive) => {
+
+    const { data, error } = await supabase
+        .from("studio_master")
+        .update({
+
+            is_active: isActive,
+
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+
+        throw error;
+
+    }
+
+    // ===========================
+    // Sync Google Sheet
+    // ===========================
+
+    await syncStudioMaster();
+
+    console.log("✅ Studio Master synced.");
+
+    return data;
+
+};
+
 module.exports = {
 
     getStudios,
@@ -191,5 +226,7 @@ module.exports = {
     createStudio,
 
     updateStudio,
+
+    updateStudioStatus,
 
 };
