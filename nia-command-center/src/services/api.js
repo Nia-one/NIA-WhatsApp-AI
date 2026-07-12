@@ -1,11 +1,21 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://nia-whatsapp-ai.onrender.com/api",
+  baseURL: "https://nia-whatsapp-ai.onrender.com/api",
   timeout: 300000,
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("nia_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });
 
 export default api;

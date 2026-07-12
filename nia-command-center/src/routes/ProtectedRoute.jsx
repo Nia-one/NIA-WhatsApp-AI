@@ -62,7 +62,9 @@ export default function ProtectedRoute() {
 
   const token = localStorage.getItem("nia_token");
 
-  const user = JSON.parse(localStorage.getItem("nia_user"));
+  const user = JSON.parse(
+  localStorage.getItem("nia_user") || "{}"
+);
 
   if (!token) {
     return <Navigate to="/login" replace />;
