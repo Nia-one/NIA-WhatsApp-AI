@@ -9,7 +9,8 @@ const {
     getInventoryReport,
     getCustomerReport,
     getProductReport,
-    getSalesReport
+    getSalesReport,
+    getStudioReport
     
 } = require("../../services/reportService");
 
@@ -943,6 +944,121 @@ exports.exportSalesReport = async (req, res) => {
 
             message:error.message
 
+        });
+
+    }
+
+};
+
+// ======================================
+// Studio Export
+// ======================================
+
+exports.exportStudioReport = async (req, res) => {
+
+    try {
+
+        const studios = await getStudioReport();
+
+        const columns = [
+
+            {
+                header: "Studio Code",
+                key: "studio_code"
+            },
+
+            {
+                header: "Studio Name",
+                key: "studio_name"
+            },
+
+            {
+                header: "Theatre Code",
+                key: "theatre_code"
+            },
+
+            {
+                header: "Theatre Name",
+                key: "theatre_name"
+            },
+
+            {
+                header: "City",
+                key: "city"
+            },
+
+            {
+                header: "State",
+                key: "state"
+            },
+
+            {
+                header: "Address",
+                key: "address"
+            },
+
+            {
+                header: "Contact Person",
+                key: "contact_person"
+            },
+
+            {
+                header: "Contact Number",
+                key: "contact_number"
+            },
+
+            {
+                header: "Status",
+                key: "is_active"
+            },
+
+            {
+                header: "Created At",
+                key: "created_at"
+            }
+
+        ];
+
+        if (req.query.type === "csv") {
+
+            const csv = generateCSV({
+                columns,
+                data: studios
+            });
+
+            res.header("Content-Type", "text/csv");
+            res.attachment("nia_studio_report.csv");
+
+            return res.send(csv);
+
+        }
+
+        const buffer = await generateExcel({
+
+            sheetName: "Studios",
+
+            columns,
+
+            data: studios
+
+        });
+
+        res.header(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        res.attachment("nia_studio_report.xlsx");
+
+        return res.send(buffer);
+
+    } catch (error) {
+
+        console.error("Studio Export Error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
 
     }

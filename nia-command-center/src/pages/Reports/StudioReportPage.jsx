@@ -1,4 +1,6 @@
 import StudioAnalytics from "../../components/dashboard/StudioAnalytics";
+import ExportButtons from "../../components/common/ExportButtons";
+
 
 import {
   useStudioAnalytics,
@@ -41,15 +43,25 @@ export default function StudioReportPage() {
 
       <div className="rounded-3xl bg-white p-8 shadow-sm">
 
-        <h1 className="text-3xl font-bold text-slate-800">
-          Studio Report
-        </h1>
+    <div className="flex items-center justify-between">
 
-        <p className="mt-2 text-slate-500">
-          Studio-wise revenue and order performance.
-        </p>
+        <div>
 
-      </div>
+            <h1 className="text-3xl font-bold text-slate-800">
+                Studio Report
+            </h1>
+
+            <p className="mt-2 text-slate-500">
+                Studio-wise revenue and order performance.
+            </p>
+
+        </div>
+
+        <ExportButtons report="studios" />
+
+    </div>
+
+</div>
 
       {/* Studio Analytics */}
 

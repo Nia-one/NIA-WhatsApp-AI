@@ -9,7 +9,8 @@ const {
      exportInventoryReport,
         exportCustomerReport,
         exportProductReport,
-        exportSalesReport
+        exportSalesReport,
+          exportStudioReport
 } = require("../controllers/reportExportController");
 
 
@@ -60,6 +61,13 @@ router.get(
 router.get(
     "/sales",
     exportSalesReport
+);
+
+// Studio Export
+
+router.get(
+    "/studios",
+    exportStudioReport
 );
 
 module.exports = router;

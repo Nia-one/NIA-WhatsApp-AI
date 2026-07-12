@@ -894,6 +894,32 @@ const getSalesReport = async () => {
 
 };
 
+const getStudioReport = async () => {
+
+    const { data, error } = await supabase
+        .from("studio_master")
+        .select(`
+            studio_code,
+            studio_name,
+            theatre_code,
+            theatre_name,
+            city,
+            state,
+            address,
+            contact_person,
+            contact_number,
+            is_active,
+            created_at
+        `)
+        .order("theatre_name", { ascending: true })
+        .order("studio_name", { ascending: true });
+
+    if (error) throw error;
+
+    return data;
+
+};
+
 
 module.exports = {
     getDashboardReport,
@@ -907,5 +933,6 @@ module.exports = {
     getInventoryReport,
       getCustomerReport,
       getProductReport,
-       getSalesReport
+       getSalesReport,
+       getStudioReport,
 };
