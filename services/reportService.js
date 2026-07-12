@@ -410,8 +410,6 @@ if (orderItemsError) throw orderItemsError;
     grand_total,
     discount_amount,
     delivery_charge,
-    total_cost,
-    gross_profit,
     order_date,
     studio_master (
         studio_name,
@@ -531,6 +529,12 @@ studioSummary[studioId].total_discount +=
 
 studioSummary[studioId].total_delivery_charge +=
     Number(order.delivery_charge || 0);
+
+// studioSummary[studioId].total_cost +=
+//     Number(order.total_cost || 0);
+
+// studioSummary[studioId].gross_profit +=
+//     Number(order.gross_profit || 0);
 
 studioSummary[studioId].total_cost +=
     Number(order.total_cost || 0);
