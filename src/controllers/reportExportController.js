@@ -240,6 +240,12 @@ exports.exportOrdersReport = async (req, res) => {
                 header: "Studio",
                 key: "studio_name"
             },
+
+            {
+    header: "Theatre",
+    key: "theatre_name"
+},
+
             {
                 header: "Subtotal",
                 key: "subtotal"
@@ -512,6 +518,11 @@ exports.exportCustomerReport = async (req, res) => {
                 header: "Studio",
                 key: "studio_name"
             },
+
+            {
+    header: "Theatre",
+    key: "theatre_name"
+},
 
             {
                 header: "Total Orders",
@@ -793,6 +804,11 @@ exports.exportSalesReport = async (req, res) => {
                 header: "Studio Name",
                 key: "studio_name"
             },
+
+            {
+    header: "Theatre Name",
+    key: "theatre_name"
+},
 
             {
                 header: "Product Code",
