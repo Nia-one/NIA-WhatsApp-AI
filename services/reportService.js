@@ -385,17 +385,41 @@ const getInventoryAnalytics = async () => {
 // ======================================
 // Studio Analytics
 // ======================================
+
 const getStudioAnalytics = async () => {
+
+const {
+    data: orderItems,
+    error: orderItemsError,
+} = await supabase
+    .from("order_items")
+    .select(`
+        studio_id,
+        quantity
+    `);
+
+if (orderItemsError) throw orderItemsError;
 
   const { data, error } = await supabase
     .from("orders")
     .select(`
-  studio_id,
-  studio_name,
-  grand_total,
-  studio_master (
-    studio_name
-  )
+    studio_id,
+    customer_id,
+    studio_name,
+    theatre_name,
+    grand_total,
+    discount_amount,
+    delivery_charge,
+    total_cost,
+    gross_profit,
+    order_date,
+    studio_master (
+        studio_name,
+        theatre_name,
+        city,
+        state,
+        is_active
+    )
 `);
 
   if (error) throw error;
@@ -403,10 +427,39 @@ const getStudioAnalytics = async () => {
 
   const studioSummary = {};
 
+  const studioCustomers = {};
+
+  const productsSold = {};
+
+  orderItems.forEach((item) => {
+
+    const studioId = item.studio_id || "Unknown";
+
+    if (!productsSold[studioId]) {
+
+        productsSold[studioId] = 0;
+
+    }
+
+    productsSold[studioId] += Number(item.quantity || 0);
+
+});
 
   data.forEach(order => {
 
     const studioId = order.studio_id || "Unknown";
+
+    if (!studioCustomers[studioId]) {
+
+    studioCustomers[studioId] = new Set();
+
+}
+
+if (order.customer_id) {
+
+    studioCustomers[studioId].add(order.customer_id);
+
+}
 
 
     const studioName =
@@ -417,34 +470,125 @@ const getStudioAnalytics = async () => {
 
     if (!studioSummary[studioId]) {
 
-      studioSummary[studioId] = {
+    studioSummary[studioId] = {
 
         studio_id: studioId,
 
         studio_name: studioName,
 
+        theatre_name:
+            order.studio_master?.theatre_name ||
+            order.theatre_name ||
+            "Unknown",
+
+        city:
+            order.studio_master?.city || "",
+
+        state:
+            order.studio_master?.state || "",
+
+        is_active:
+            order.studio_master?.is_active ?? true,
+
+        total_customers: 0,
+
         total_orders: 0,
 
-        total_revenue: 0
+        products_sold: 0,
 
-      };
+        total_revenue: 0,
 
-    }
+        total_discount: 0,
+
+        total_delivery_charge: 0,
+
+        total_cost: 0,
+
+        gross_profit: 0,
+
+        first_order_date: order.order_date,
+
+        last_order_date: order.order_date
+
+    };
+
+}
 
 
     studioSummary[studioId].total_orders += 1;
 
+studioSummary[studioId].total_customers =
+    studioCustomers[studioId].size;
 
-    studioSummary[studioId].total_revenue +=
-      Number(order.grand_total || 0);
+    studioSummary[studioId].products_sold =
+    productsSold[studioId] || 0;
+
+studioSummary[studioId].total_revenue +=
+    Number(order.grand_total || 0);
+
+studioSummary[studioId].total_discount +=
+    Number(order.discount_amount || 0);
+
+studioSummary[studioId].total_delivery_charge +=
+    Number(order.delivery_charge || 0);
+
+studioSummary[studioId].total_cost +=
+    Number(order.total_cost || 0);
+
+studioSummary[studioId].gross_profit +=
+    Number(order.gross_profit || 0);
+
+// First Order Date
+if (
+    order.order_date &&
+    order.order_date < studioSummary[studioId].first_order_date
+) {
+    studioSummary[studioId].first_order_date =
+        order.order_date;
+}
+
+// Last Order Date
+if (
+    order.order_date &&
+    order.order_date > studioSummary[studioId].last_order_date
+) {
+    studioSummary[studioId].last_order_date =
+        order.order_date;
+}
 
   });
 
 
   return Object.values(studioSummary)
+    .map((studio) => ({
+
+        ...studio,
+
+        average_order_value:
+            studio.total_orders > 0
+                ? Number(
+                    (
+                        studio.total_revenue /
+                        studio.total_orders
+                    ).toFixed(2)
+                )
+                : 0,
+
+        gross_margin:
+            studio.total_revenue > 0
+                ? Number(
+                    (
+                        (studio.gross_profit /
+                            studio.total_revenue) *
+                        100
+                    ).toFixed(2)
+                )
+                : 0
+
+    }))
     .sort(
-      (a, b) =>
-        b.total_revenue - a.total_revenue
+        (a, b) =>
+            b.total_revenue - a.total_revenue
     );
 
 };
