@@ -395,7 +395,9 @@ const {
     .from("order_items")
     .select(`
         studio_id,
-        quantity
+        quantity,
+        cost,
+        gross_profit
     `);
 
 if (orderItemsError) throw orderItemsError;
@@ -429,17 +431,31 @@ if (orderItemsError) throw orderItemsError;
 
   const productsSold = {};
 
+  const studioCost = {};
+
+const studioProfit = {};
+
   orderItems.forEach((item) => {
 
     const studioId = item.studio_id || "Unknown";
 
     if (!productsSold[studioId]) {
-
         productsSold[studioId] = 0;
+    }
 
+    if (!studioCost[studioId]) {
+        studioCost[studioId] = 0;
+    }
+
+    if (!studioProfit[studioId]) {
+        studioProfit[studioId] = 0;
     }
 
     productsSold[studioId] += Number(item.quantity || 0);
+
+    studioCost[studioId] += Number(item.cost || 0);
+
+    studioProfit[studioId] += Number(item.gross_profit || 0);
 
 });
 
@@ -521,6 +537,12 @@ studioSummary[studioId].total_customers =
     studioSummary[studioId].products_sold =
     productsSold[studioId] || 0;
 
+    studioSummary[studioId].total_cost =
+    studioCost[studioId] || 0;
+
+studioSummary[studioId].gross_profit =
+    studioProfit[studioId] || 0;
+
 studioSummary[studioId].total_revenue +=
     Number(order.grand_total || 0);
 
@@ -530,17 +552,6 @@ studioSummary[studioId].total_discount +=
 studioSummary[studioId].total_delivery_charge +=
     Number(order.delivery_charge || 0);
 
-// studioSummary[studioId].total_cost +=
-//     Number(order.total_cost || 0);
-
-// studioSummary[studioId].gross_profit +=
-//     Number(order.gross_profit || 0);
-
-studioSummary[studioId].total_cost +=
-    Number(order.total_cost || 0);
-
-studioSummary[studioId].gross_profit +=
-    Number(order.gross_profit || 0);
 
 // First Order Date
 if (

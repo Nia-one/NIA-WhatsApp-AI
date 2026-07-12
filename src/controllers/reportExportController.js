@@ -10,8 +10,8 @@ const {
     getCustomerReport,
     getProductReport,
     getSalesReport,
-    getStudioReport
-    
+    getStudioReport,
+    getStudioAnalytics
 } = require("../../services/reportService");
 
 
@@ -958,66 +958,66 @@ exports.exportStudioReport = async (req, res) => {
 
     try {
 
-        const studios = await getStudioReport();
+      const studios = await getStudioAnalytics();
 
         const columns = [
 
-            {
-                header: "Studio Code",
-                key: "studio_code"
-            },
+    {
+        header: "Studio",
+        key: "studio_name"
+    },
 
-            {
-                header: "Studio Name",
-                key: "studio_name"
-            },
+    {
+        header: "Theatre",
+        key: "theatre_name"
+    },
 
-            {
-                header: "Theatre Code",
-                key: "theatre_code"
-            },
+    {
+        header: "Status",
+        key: "is_active"
+    },
 
-            {
-                header: "Theatre Name",
-                key: "theatre_name"
-            },
+    {
+        header: "Total Customers",
+        key: "total_customers"
+    },
 
-            {
-                header: "City",
-                key: "city"
-            },
+    {
+        header: "Products Sold",
+        key: "products_sold"
+    },
 
-            {
-                header: "State",
-                key: "state"
-            },
+    {
+        header: "Total Orders",
+        key: "total_orders"
+    },
 
-            {
-                header: "Address",
-                key: "address"
-            },
+    {
+        header: "Revenue",
+        key: "total_revenue"
+    },
 
-            {
-                header: "Contact Person",
-                key: "contact_person"
-            },
+    {
+        header: "Cost",
+        key: "total_cost"
+    },
 
-            {
-                header: "Contact Number",
-                key: "contact_number"
-            },
+    {
+        header: "Profit",
+        key: "gross_profit"
+    },
 
-            {
-                header: "Status",
-                key: "is_active"
-            },
+    {
+        header: "Margin %",
+        key: "gross_margin"
+    },
 
-            {
-                header: "Created At",
-                key: "created_at"
-            }
+    {
+        header: "Average Order Value",
+        key: "average_order_value"
+    }
 
-        ];
+];
 
         if (req.query.type === "csv") {
 
