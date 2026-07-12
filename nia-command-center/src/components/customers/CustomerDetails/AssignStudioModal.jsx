@@ -17,9 +17,13 @@ const {
     queryFn: getStudios,
 });
 
+const activeStudios = studios.filter(
+    (studio) => studio.is_active
+);
+
 const theatres = [
     ...new Map(
-        studios.map((studio) => [
+        activeStudios.map((studio) => [
             studio.theatre_name,
             studio,
         ])
@@ -30,7 +34,7 @@ const [selectedTheatre, setSelectedTheatre] = useState("");
 
 const [selectedStudio, setSelectedStudio] = useState("");
 
-const filteredStudios = studios.filter(
+const filteredStudios = activeStudios.filter(
     (studio) => studio.theatre_name === selectedTheatre
 );
 
