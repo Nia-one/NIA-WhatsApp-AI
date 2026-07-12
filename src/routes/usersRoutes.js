@@ -29,7 +29,12 @@ const {
 // ======================================
 
 router.use(authenticate);
-router.use(authorizeRoles("admin"));
+router.use(
+    authorizeRoles(
+        "admin",
+        "super_admin"
+    )
+);
 
 // ======================================
 // Users
