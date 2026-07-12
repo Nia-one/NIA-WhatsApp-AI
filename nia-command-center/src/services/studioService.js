@@ -38,3 +38,19 @@ export const updateStudio = async (id, payload) => {
     return data.data;
 
 };
+
+// =============================
+// Update Studio Status
+// =============================
+export const updateStudioStatus = async (id, isActive) => {
+
+    const { data } = await api.put(
+        `/studios/${id}/status`,
+        {
+            is_active: isActive,
+        }
+    );
+
+    return data.data;
+
+};

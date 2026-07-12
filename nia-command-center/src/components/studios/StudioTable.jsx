@@ -1,5 +1,16 @@
 import { useMemo, useState } from "react";
-import { Eye, Pencil, ArrowUpDown } from "lucide-react";
+import {
+    Eye,
+    Pencil,
+    Power,
+    ArrowUpDown,
+} from "lucide-react";
+
+import { toast } from "sonner";
+
+import { updateStudioStatus } from "../../services/studioService";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 import StudioDrawer from "./StudioDrawer";
 
@@ -40,6 +51,8 @@ export default function StudioTable({
 }) {
 
     const [selectedStudio, setSelectedStudio] = useState(null);
+
+    const queryClient = useQueryClient();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const [sortField, setSortField] = useState("studio_name");
@@ -54,6 +67,48 @@ export default function StudioTable({
         setDrawerOpen(false);
         setSelectedStudio(null);
     };
+
+const handleStatusToggle = async (studio) => {
+
+    const action = studio.is_active
+        ? "deactivate"
+        : "activate";
+
+    const confirmed = window.confirm(
+        `Are you sure you want to ${action} "${studio.studio_name}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+        await updateStudioStatus(
+            studio.id,
+            !studio.is_active
+        );
+
+toast.success(
+    studio.is_active
+        ? "Studio deactivated successfully."
+        : "Studio activated successfully."
+);
+
+        queryClient.invalidateQueries({
+            queryKey: ["studios"],
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        toast.error(
+            err?.response?.data?.message ||
+            err.message
+        );
+
+    }
+
+};
 
     const handleSort = (field) => {
 
@@ -206,7 +261,7 @@ export default function StudioTable({
 
                                     </td>
 
-                                    <td className="p-4 text-center">
+<td className="p-4 text-center">
 
     <div className="flex justify-center gap-2">
 
@@ -217,6 +272,26 @@ export default function StudioTable({
             title="Edit Studio"
         >
             <Pencil size={18} />
+        </button>
+
+        <button
+            type="button"
+            onClick={() => handleStatusToggle(studio)}
+            className="rounded-lg p-2 transition hover:bg-yellow-100"
+            title={
+                studio.is_active
+                    ? "Deactivate Studio"
+                    : "Activate Studio"
+            }
+        >
+            <Power
+                size={18}
+                className={
+                    studio.is_active
+                        ? "text-green-600"
+                        : "text-red-600"
+                }
+            />
         </button>
 
         <button
