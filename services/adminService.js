@@ -36,13 +36,6 @@ const getDashboardSummary = async () => {
 
   ]);
 
-console.log("========== DASHBOARD ==========");
-console.log("Orders:", orders.count);
-console.log("Customers:", customers.count);
-console.log("Products:", products.count);
-console.log("Product Error:", products.error);
-console.log("===============================");
-
   if (orders.error) throw orders.error;
   if (customers.error) throw customers.error;
   if (products.error) throw products.error;
