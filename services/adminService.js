@@ -6,58 +6,129 @@ const supabase = require("../config/supabase");
 // ======================================
 const getDashboardSummary = async () => {
 
+  const today = new Date();
+
+  const todayStart = new Date(today);
+  todayStart.setHours(0,0,0,0);
+
+  const yesterdayStart = new Date(today);
+  yesterdayStart.setDate(today.getDate() - 1);
+  yesterdayStart.setHours(0,0,0,0);
+
+
   const [
-    orders,
+    todayOrders,
+    yesterdayOrders,
     customers,
     products,
     lowStock
   ] = await Promise.all([
 
+
+    // Today's Orders
     supabase
       .from("orders")
-      .select("grand_total, order_status", { count: "exact" }),
+      .select("grand_total, order_status", { count:"exact" })
+      .gte("order_date", todayStart.toISOString()),
 
+
+    // Yesterday Orders
+    supabase
+      .from("orders")
+      .select("grand_total", { count:"exact" })
+      .gte("order_date", yesterdayStart.toISOString())
+      .lt("order_date", todayStart.toISOString()),
+
+
+    // Customers
     supabase
       .from("customer_master")
-      .select("*", { count: "exact" }),
+      .select("*", { count:"exact" }),
 
-    supabase
-  .from("product_master")
-  .select("id", {
-    count: "exact",
-    head: true,
-  })
-  .eq("is_active", true),
 
+    // Active Products
     supabase
-  .from("inventory_master")
-  .select("*", { count: "exact" })
-  .lt("available_stock", 10)
+      .from("product_master")
+      .select("id", {
+        count:"exact",
+        head:true
+      })
+      .eq("is_active", true),
+
+
+    // Low Stock
+    supabase
+      .from("inventory_master")
+      .select("*", { count:"exact" })
+      .lt("available_stock",10)
 
   ]);
 
-  if (orders.error) throw orders.error;
-  if (customers.error) throw customers.error;
-  if (products.error) throw products.error;
-  if (lowStock.error) throw lowStock.error;
 
-  const totalRevenue = orders.data.reduce(
-    (sum, order) => sum + Number(order.grand_total),
+  if(todayOrders.error) throw todayOrders.error;
+  if(yesterdayOrders.error) throw yesterdayOrders.error;
+  if(customers.error) throw customers.error;
+  if(products.error) throw products.error;
+  if(lowStock.error) throw lowStock.error;
+
+
+  const todayRevenue = todayOrders.data.reduce(
+    (sum,order)=>sum + Number(order.grand_total),
     0
   );
 
-  const pendingOrders = orders.data.filter(
-    order => order.order_status === "Pending"
-  ).length;
+
+  const yesterdayRevenue = yesterdayOrders.data.reduce(
+    (sum,order)=>sum + Number(order.grand_total),
+    0
+  );
+
+
+  const calculateGrowth = (today,yesterday)=>{
+
+    if(yesterday === 0){
+      return today > 0 ? 100 : 0;
+    }
+
+    return Number(
+      (((today-yesterday)/yesterday)*100).toFixed(1)
+    );
+  };
+
 
   return {
-    total_orders: orders.count,
+
+    total_orders: todayOrders.count,
+
     total_customers: customers.count,
+
     total_products: products.count,
-    total_revenue: totalRevenue,
-    pending_orders: pendingOrders,
+
+    total_revenue: todayRevenue,
+
+
+    orders_growth: calculateGrowth(
+      todayOrders.count,
+      yesterdayOrders.count
+    ),
+
+
+    revenue_growth: calculateGrowth(
+      todayRevenue,
+      yesterdayRevenue
+    ),
+
+
+    pending_orders:
+      todayOrders.data.filter(
+        order=>order.order_status==="Pending"
+      ).length,
+
+
     low_stock_products: lowStock.count
+
   };
+
 };
 
 // ======================================
