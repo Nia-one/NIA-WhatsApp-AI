@@ -10,6 +10,12 @@ import { useDashboard } from "../../hooks/useDashboard";
 
 export default function DashboardPage() {
 
+  const formatGrowth = (value) => {
+  const growth = Number(value ?? 0);
+
+  return `${growth > 0 ? "+" : ""}${growth}%`;
+};
+
   const { data, isLoading, error } = useDashboard();
 
   if (isLoading) {
@@ -46,36 +52,36 @@ export default function DashboardPage() {
       <div className="grid grid-cols-4 gap-6">
 
         <KpiCard
-          title="Revenue"
-          value={`₹${Number(data?.total_revenue ?? 0).toLocaleString("en-IN")}`}
-          change="+0%"
-          positive
-          icon={DollarSign}
-        />
+  title="Revenue"
+  value={`₹${Number(data?.total_revenue ?? 0).toLocaleString("en-IN")}`}
+  change={formatGrowth(data?.revenue_growth)}
+  positive={Number(data?.revenue_growth ?? 0) >= 0}
+  icon={DollarSign}
+/>
 
-        <KpiCard
-          title="Orders"
-          value={data?.total_orders ?? 0}
-          change="+0%"
-          positive
-          icon={ShoppingCart}
-        />
+<KpiCard
+  title="Orders"
+  value={data?.total_orders ?? 0}
+ change={formatGrowth(data?.orders_growth)}
+ positive={Number(data?.orders_growth ?? 0) >= 0}
+  icon={ShoppingCart}
+/>
 
-        <KpiCard
-          title="Customers"
-          value={data?.total_customers ?? 0}
-          change="+0%"
-          positive
-          icon={Users}
-        />
+<KpiCard
+  title="Customers"
+  value={data?.total_customers ?? 0}
+  change="+0%"
+  positive
+  icon={Users}
+/>
 
-        <KpiCard
-          title="Products"
-          value={data?.total_products ?? 0}
-          change="+0%"
-          positive
-          icon={Boxes}
-        />
+<KpiCard
+  title="Products"
+  value={data?.total_products ?? 0}
+  change="+0%"
+  positive
+  icon={Boxes}
+/>
 
       </div>
 
