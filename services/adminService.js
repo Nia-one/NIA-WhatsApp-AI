@@ -22,8 +22,12 @@ const getDashboardSummary = async () => {
       .select("*", { count: "exact" }),
 
     supabase
-      .from("product_master")
-      .select("*", { count: "exact" }),
+  .from("product_master")
+  .select("id", {
+    count: "exact",
+    head: true,
+  })
+  .eq("is_active", true),
 
     supabase
   .from("inventory_master")
@@ -31,6 +35,13 @@ const getDashboardSummary = async () => {
   .lt("available_stock", 10)
 
   ]);
+
+console.log("========== DASHBOARD ==========");
+console.log("Orders:", orders.count);
+console.log("Customers:", customers.count);
+console.log("Products:", products.count);
+console.log("Product Error:", products.error);
+console.log("===============================");
 
   if (orders.error) throw orders.error;
   if (customers.error) throw customers.error;
