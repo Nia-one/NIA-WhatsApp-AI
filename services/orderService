@@ -87,7 +87,10 @@ logInfo("Guest ID", guest.id);
 logInfo("Customer ID", customer.id);
 
     if (!cartItems.length) {
-        return null;
+        return {
+            success: false,
+            code: "EMPTY_CART"
+        };
     }
 
     let total = 0;
@@ -151,7 +154,9 @@ customer_mobile: customer.mobile_number,
 
         payment_mode: "COD",
         payment_status: "Pending",
-        order_status: "Pending"
+        // The customer reached this method by explicitly confirming checkout.
+        // Save it as confirmed so it is ready for the production workflow.
+        order_status: "Confirmed"
     })
     .select()
     .single();
@@ -165,34 +170,33 @@ customer_mobile: customer.mobile_number,
 
 }
 
-// ======================================
-// Create Order Timeline
-// ======================================
-
-const timelineCreated = await addOrderTimeline(
-    order.id,
-    "Order Placed",
-    "Order successfully created",
-    "System"
-);
-
-if (timelineCreated) {
-
-    logSuccess("Order timeline created");
-
-} else {
-
-    logError("Order timeline creation failed");
-
-}
-
     if (orderError) {
         logError("Order creation failed");
-console.error(orderError);
-        return null;
+        console.error(orderError);
+        return {
+            success: false,
+            code: "ORDER_CREATION_FAILED"
+        };
     }
 
    try {
+
+    // ======================================
+    // Create Order Timeline
+    // ======================================
+
+    const timelineCreated = await addOrderTimeline(
+        order.id,
+        "Confirmed",
+        "Order confirmed and sent to production",
+        "System"
+    );
+
+    if (!timelineCreated) {
+        throw new Error("Order timeline creation failed");
+    }
+
+    logSuccess("Order timeline created");
 
     // ======================================
     // Insert Order Items
@@ -383,7 +387,10 @@ try {
 
     await rollbackOrder(order.id);
 
-    return null;
+    return {
+        success: false,
+        code: "ORDER_PROCESSING_FAILED"
+    };
 
 }
 
@@ -403,6 +410,7 @@ logInfo("Grand Total", `₹${total}`);
 logSuccess("Order completed successfully");
 
 return {
+    success: true,
     orderId: order.order_number,
     total
 };

@@ -11,7 +11,7 @@ async function sendOrderSuccessButtons(
 
 `🎉 *Thank You for Shopping!*
 
-Your order has been successfully placed.
+Your order has been confirmed and sent to production.
 
 🧾 Order ID: ${orderId}
 

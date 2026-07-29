@@ -31,15 +31,22 @@ console.log("================================");
 
         const result = await createOrder(mobile);
 
-        if (!result) {
+        if (!result || result.code === "EMPTY_CART") {
 
             await sendEmptyCartButtons(
-    mobile
-);
+                mobile
+            );
 
-return true;
+            return true;
+        }
 
-            
+        if (!result.success) {
+            await sendWhatsAppMessage(
+                mobile,
+                "Sorry, we could not confirm your order right now. Your cart is still available. Please try again."
+            );
+
+            return true;
         }
 
         await sendOrderSuccessButtons(
