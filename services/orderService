@@ -48,7 +48,10 @@ const {
 
 async function createOrder(customerMobile) {
 
-    
+    let stage = "initialization";
+    let order = null;
+
+    try {
 
     console.log("================================");
 console.log("CREATE ORDER CALLED");
@@ -59,6 +62,7 @@ console.log("================================");
     // Get or Create Guest
     // ======================================
 
+    stage = "get_or_create_guest";
     const guest = await getOrCreateGuest(customerMobile);
 
     console.log("Guest Details:", guest);
@@ -67,6 +71,7 @@ console.log("================================");
 // Get or Create Customer
 // ======================================
 
+stage = "get_or_create_customer";
 const customer = await getOrCreateCustomer(guest);
 
 console.log("Customer Details:", customer);
@@ -77,6 +82,7 @@ console.log("Studio ID:", customer.studio_id);
 console.log("Studio Name:", customer.studio_name);
 console.log("================================");
 
+    stage = "load_cart";
     const cartItems = await getCart(customerMobile);
 
     logSection("CREATE ORDER");
@@ -96,6 +102,7 @@ logInfo("Customer ID", customer.id);
     let total = 0;
 
     // Create Order
+stage = "generate_order_number";
 const orderNumber = await generateOrderNumber();
 
 console.log("====================================");
@@ -133,7 +140,8 @@ console.log("Guest Studio:", guest.studio_name);
 console.log("Customer Studio:", customer.studio_name);
 console.log("====================================");
 
-const { data: order, error: orderError } = await supabase
+stage = "create_order";
+const { data: createdOrder, error: orderError } = await supabase
     .from("orders")
     .insert({                
         order_number: orderNumber,
@@ -161,6 +169,8 @@ customer_mobile: customer.mobile_number,
     .select()
     .single();
 
+    order = createdOrder;
+
     if (!orderError) {
 
     logSuccess("Order created successfully");
@@ -185,24 +195,32 @@ customer_mobile: customer.mobile_number,
     // Create Order Timeline
     // ======================================
 
-    const timelineCreated = await addOrderTimeline(
-        order.id,
-        "Confirmed",
-        "Order confirmed and sent to production",
-        "System"
-    );
+    // Timeline is useful for reporting, but it must not prevent checkout.
+    try {
+        const timelineCreated = await addOrderTimeline(
+            order.id,
+            "Confirmed",
+            "Order confirmed and sent to production",
+            "System"
+        );
 
-    if (!timelineCreated) {
-        throw new Error("Order timeline creation failed");
+        if (timelineCreated) {
+            logSuccess("Order timeline created");
+        } else {
+            logError("Order timeline creation failed (non-critical)");
+        }
+    } catch (timelineError) {
+        logError("Order timeline creation failed (non-critical)");
+        console.error(timelineError);
     }
-
-    logSuccess("Order timeline created");
 
     // ======================================
     // Insert Order Items
     // ======================================
 
     for (const item of cartItems) {
+
+        stage = `create_order_item:${item.product_id}`;
 
         console.log("Saving Order Item...");
         console.log(item);
@@ -331,6 +349,8 @@ if (!inventoryUpdated) {
     // Update Order Total
     // ======================================
 
+    stage = "update_order_total";
+
     const { error: totalError } = await supabase
         .from("orders")
         .update({
@@ -347,18 +367,20 @@ if (!inventoryUpdated) {
     // Update Customer Analytics
     // ======================================
 
-    const analyticsUpdated =
-    await updateCustomerAnalytics(
-        customer.id
-    );
+    // Analytics can be rebuilt later and must not invalidate a paid/confirmed
+    // order whose items and inventory were already committed.
+    try {
+        const analyticsUpdated = await updateCustomerAnalytics(customer.id);
 
-    if (!analyticsUpdated) {
-        throw new Error(
-            "Customer analytics update failed"
-        );
+        if (analyticsUpdated) {
+            logSuccess("Customer analytics updated");
+        } else {
+            logError("Customer analytics update failed (non-critical)");
+        }
+    } catch (analyticsError) {
+        logError("Customer analytics update failed (non-critical)");
+        console.error(analyticsError);
     }
-
-    logSuccess("Customer analytics updated");
 
     // ======================================
 // Clear Cart (Non-Critical)
@@ -383,9 +405,15 @@ try {
     console.log("ORDER PROCESS FAILED");
     console.log("================================");
 
+    console.error("Order processing stage:", stage);
     console.error(err);
 
-    await rollbackOrder(order.id);
+    try {
+        await rollbackOrder(order.id);
+    } catch (rollbackError) {
+        console.error("ROLLBACK FAILED; original checkout error is above");
+        console.error(rollbackError);
+    }
 
     return {
         success: false,
@@ -414,6 +442,19 @@ return {
     orderId: order.order_number,
     total
 };
+    } catch (err) {
+        console.error("================================");
+        console.error("CREATE ORDER FAILED");
+        console.error("Stage:", stage);
+        console.error(err);
+        console.error("================================");
+
+        return {
+            success: false,
+            code: "ORDER_CREATION_FAILED",
+            stage
+        };
+    }
 }
 async function getOrders(filters = {}) {
 
