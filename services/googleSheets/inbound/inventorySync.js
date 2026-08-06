@@ -94,15 +94,23 @@ async function updateInventory(inventory) {
         return;
     }
 
-    // IMPORTANT:
-    // Do NOT overwrite stock maintained by the application.
-    // Only sync static configuration fields from Google Sheets.
+    const status =
+        available <= 0
+            ? "Out of Stock"
+            : available <= reorder
+                ? "Low Stock"
+                : "In Stock";
 
     const { error } = await supabase
         .from(TABLES.INVENTORY_MASTER)
         .update({
+            total_stock: total,
+            reserved_stock: reserved,
+            available_stock: available,
             reorder_level: reorder,
-            warehouse_location: inventory.warehouse_location
+            inventory_status: status,
+            warehouse_location: inventory.warehouse_location,
+            last_stock_update: new Date().toISOString()
         })
         .eq("product_code", inventory.product_code);
 

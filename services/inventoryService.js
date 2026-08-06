@@ -1,5 +1,21 @@
 const supabase = require("../config/supabase");
-const { writeSheet } = require("./googleSheets/googleSheetsService");
+const {
+    writeSheet,
+    updateInventoryRow
+} = require("./googleSheets/googleSheetsService");
+
+async function syncInventoryRowSafely(inventory) {
+    try {
+        await updateInventoryRow(inventory);
+    } catch (error) {
+        // The database update is authoritative. A Sheets permission or network
+        // failure must not invalidate an otherwise valid order.
+        console.error(
+            `Inventory sheet update failed for ${inventory.product_code}`
+        );
+        console.error(error);
+    }
+}
 
 async function reduceInventory(productId, quantity) {
 
@@ -73,6 +89,8 @@ console.log(updatedInventory);
 
 console.log("================================");
 
+await syncInventoryRowSafely(updatedInventory);
+
 return true;
 }
 
@@ -135,6 +153,8 @@ console.log("Updated Inventory Record:");
 console.log(updatedInventory);
 
 console.log("================================");
+
+await syncInventoryRowSafely(updatedInventory);
 
 return true;
 
