@@ -259,19 +259,11 @@ console.log("CURRENT STATE:", state);
     // Invalid Input
     // ===============================
 
-    const page = await getProductsPage(1);
-
-console.log("================================");
-console.log("CATALOGUE DEBUG");
-console.log("Products on page:", page.products.length);
-console.log("Total products:", page.totalProducts);
-console.log("Current page:", page.page);
-console.log("================================");
-
-await sendProductList(
-    mobile,
-    page
-);
+    await sendWhatsAppMessage(
+        mobile,
+        "Please choose a category from the list below."
+    );
+    await sendCategoryList(mobile);
 
 return true;
 
