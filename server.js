@@ -442,6 +442,37 @@ console.log(">>> AFTER sendProductList");
     return res.sendStatus(200);
 
 }
+
+// Keep catalogue pagination globally routable. Interactive list replies can
+// arrive while the saved conversation state is stale, but NEXT_PAGE still
+// carries an unambiguous catalogue action.
+if (String(userMessage).trim().toUpperCase() === "NEXT_PAGE") {
+
+    const currentPage = Math.max(
+        1,
+        Number.parseInt(state?.current_page, 10) || 1
+    );
+    const nextPage = await getNextPage(currentPage);
+
+    if (!nextPage.products.length) {
+        await sendWhatsAppMessage(
+            mobile,
+            "✅ You have reached the last page of products."
+        );
+
+        return res.sendStatus(200);
+    }
+
+    await updateConversation(mobile, {
+        current_state: "PRODUCT_CATALOGUE",
+        current_page: nextPage.page,
+        current_product_index: 0
+    });
+
+    await sendProductList(mobile, nextPage);
+
+    return res.sendStatus(200);
+}
 // =======================================
 // GLOBAL - View Cart
 // =======================================
@@ -1038,7 +1069,7 @@ console.log("Total Products:", page.totalProducts);
 console.log("Products on Current Page:", page.products.length);
 console.log("=================================");
 
-    await sendWhatsAppList(
+    const listSent = await sendWhatsAppList(
         mobile,
 
         "🛍 *Choose a product from the list below:*",
@@ -1053,6 +1084,17 @@ console.log("=================================");
         ]
 
     );
+
+    if (!listSent) {
+        console.error(
+            `PRODUCT LIST DELIVERY FAILED: mobile=${mobile}, page=${page.page}`
+        );
+
+        await sendWhatsAppMessage(
+            mobile,
+            "❌ Product list could not be loaded. Please tap Shop Now and try again."
+        );
+    }
 
 }
 

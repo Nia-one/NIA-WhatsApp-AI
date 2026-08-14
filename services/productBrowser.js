@@ -5,15 +5,20 @@ async function getProductsPage(page = 1) {
 
     const products = await getProducts();
 
+    const normalizedPage = Math.max(
+        1,
+        Number.parseInt(page, 10) || 1
+    );
+
     const pageSize = 9;
 
-    const start = (page - 1) * pageSize;
+    const start = (normalizedPage - 1) * pageSize;
 
     const end = start + pageSize;
 
     return {
         products: products.slice(start, end),
-        page,
+        page: normalizedPage,
         totalProducts: products.length,
         totalPages: Math.ceil(products.length / pageSize)
     };
@@ -22,7 +27,12 @@ async function getProductsPage(page = 1) {
 
 async function getNextPage(currentPage) {
 
-    return getProductsPage(currentPage + 1);
+    const normalizedPage = Math.max(
+        1,
+        Number.parseInt(currentPage, 10) || 1
+    );
+
+    return getProductsPage(normalizedPage + 1);
 
 }
 
