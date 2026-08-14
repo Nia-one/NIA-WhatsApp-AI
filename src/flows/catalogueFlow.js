@@ -18,9 +18,56 @@ async function catalogueFlow({
     sendProductList,
     sendWhatsAppMessage,
     sendProductDetailsButtons,
-    sendQuantityList
+    sendQuantityList,
+    sendCategoryList
 
 }) {
+    if (userMessage === "BACK_TO_CATEGORIES") {
+        await sendCategoryList(mobile);
+        return true;
+    }
+
+    if (userMessage.startsWith("CATEGORY_")) {
+        const category = decodeURIComponent(userMessage.slice("CATEGORY_".length));
+        const page = await getProductsPage(1, category);
+
+        if (!page.products.length) {
+            await sendWhatsAppMessage(
+                mobile,
+                "This category has no products available right now."
+            );
+            await sendCategoryList(mobile);
+            return true;
+        }
+
+        await updateConversation(mobile, {
+            current_state: "PRODUCT_CATALOGUE",
+            current_page: 1,
+            current_product_index: 0
+        });
+        await sendProductList(mobile, page);
+        return true;
+    }
+
+    if (userMessage.startsWith("NEXT_PAGE_")) {
+        const parts = userMessage.split("_");
+        const nextPageNumber = Number.parseInt(parts.pop(), 10);
+        const category = decodeURIComponent(parts.slice(2).join("_"));
+        const nextPage = await getProductsPage(nextPageNumber, category);
+
+        if (!nextPage.products.length) {
+            await sendWhatsAppMessage(
+                mobile,
+                "You have reached the last page of this category."
+            );
+            return true;
+        }
+
+        await updateConversation(mobile, { current_page: nextPage.page });
+        await sendProductList(mobile, nextPage);
+        return true;
+    }
+
     // ===============================
     // Product Selection
     // ===============================

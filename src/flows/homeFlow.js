@@ -1,5 +1,4 @@
 const { updateConversation } = require("../../services/conversationService");
-const { getProductsPage } = require("../../services/productBrowser");
 const { getCart } = require("../../services/cartService");
 const { cartFlow } = require("./cartFlow");
 async function homeFlow({
@@ -11,7 +10,8 @@ async function homeFlow({
     sendWhatsAppMessage,
     sendCartButtons,
     sendEmptyCartButtons,
-    sendCheckoutButtons
+    sendCheckoutButtons,
+    sendCategoryList
 }) {
 
     if (
@@ -19,35 +19,13 @@ async function homeFlow({
     userMessage === "browse_products"
 ) {
 
-        const page = await getProductsPage(1);
-
-console.log("================================");
-console.log("PRODUCT PAGE DEBUG");
-console.log("Products on page:", page.products.length);
-console.log("Total products:", page.totalProducts);
-console.log("Current page:", page.page);
-console.log("================================");
-
-if (!page.products.length) {
-
-    await sendWhatsAppMessage(
-        mobile,
-        "❌ No products are available right now."
-    );
-
-    return true;
-}
-
         await updateConversation(mobile, {
             current_state: "PRODUCT_CATALOGUE",
             current_page: 1,
             current_product_index: 0
         });
 
-        await sendProductList(
-            mobile,
-            page
-        );
+        await sendCategoryList(mobile);
 
         return true;
     }

@@ -70,7 +70,8 @@ const {
     sendOrderSuccessButtons
 } = require("./services/orderSuccessButtons");
 const { 
-    getProducts 
+    getProducts,
+    getAvailableCategories
 } = require("./services/productService");
 
 const {
@@ -98,6 +99,27 @@ const {
 
 
 const app = express();
+
+// Meta can retry the same webhook while the first request is still being
+// processed. Mark message IDs immediately so one customer action produces one
+// bot response per running instance.
+const processedMessageIds = new Map();
+const MESSAGE_DEDUP_TTL_MS = 10 * 60 * 1000;
+
+function isDuplicateMessage(messageId) {
+    if (!messageId) return false;
+
+    const now = Date.now();
+    for (const [id, processedAt] of processedMessageIds) {
+        if (now - processedAt > MESSAGE_DEDUP_TTL_MS) {
+            processedMessageIds.delete(id);
+        }
+    }
+
+    if (processedMessageIds.has(messageId)) return true;
+    processedMessageIds.set(messageId, now);
+    return false;
+}
 
 // Security Headers
 app.use(helmet());
@@ -198,6 +220,11 @@ console.log("TYPE       :", message?.type);
 console.log("================================");
 
         if (!message) {
+            return res.sendStatus(200);
+        }
+
+        if (isDuplicateMessage(message.id)) {
+            console.log("Duplicate WhatsApp message ignored:", message.id);
             return res.sendStatus(200);
         }
 
@@ -394,7 +421,12 @@ return res.sendStatus(200);
 // =======================================
 console.log(">>> ENTERED sendProductList");
 // Product selected from WhatsApp List
-if (String(userMessage).startsWith("PRODUCT_")) {
+if (
+    String(userMessage).startsWith("PRODUCT_") ||
+    String(userMessage).startsWith("CATEGORY_") ||
+    String(userMessage).startsWith("NEXT_PAGE_") ||
+    String(userMessage).trim() === "BACK_TO_CATEGORIES"
+) {
 
     await catalogueFlow({
         mobile,
@@ -405,7 +437,8 @@ if (String(userMessage).startsWith("PRODUCT_")) {
         sendWhatsAppMessage,
         sendProductDetailsButtons,
         sendProductList,
-        sendQuantityList
+        sendQuantityList,
+        sendCategoryList
     });
 
     return res.sendStatus(200);
@@ -418,8 +451,6 @@ if (
     String(userMessage).trim() === "back_to_products"
 ) {
 
-    const page = await getProductsPage(1);
-
     await updateConversation(
         mobile,
         {
@@ -430,14 +461,7 @@ if (
         }
     );
 
-    console.log(">>> BEFORE sendProductList");
-
-await sendProductList(
-    mobile,
-    page
-);
-
-console.log(">>> AFTER sendProductList");
+    await sendCategoryList(mobile);
 
     return res.sendStatus(200);
 
@@ -623,7 +647,8 @@ if (state.current_state === "HOME") {
         sendWhatsAppMessage,
         sendCartButtons,
         sendEmptyCartButtons,
-        sendCheckoutButtons
+        sendCheckoutButtons,
+        sendCategoryList
     });
 
     return res.sendStatus(200);
@@ -785,7 +810,8 @@ if (state.current_state === "PRODUCT_CATALOGUE") {
     sendWhatsAppMessage,
     sendProductDetailsButtons,
     sendProductList,
-    sendQuantityList
+    sendQuantityList,
+    sendCategoryList
 });
     return res.sendStatus(200);
 
@@ -1039,7 +1065,9 @@ if (page.page < page.totalPages) {
 
     rows.push({
 
-        id: "NEXT_PAGE",
+        id: page.category
+            ? `NEXT_PAGE_${encodeURIComponent(page.category)}_${page.page + 1}`
+            : "NEXT_PAGE",
 
         title: "➡️ Next Products",
 
@@ -1047,6 +1075,14 @@ if (page.page < page.totalPages) {
 
     });
 
+}
+
+if (page.category) {
+    rows.push({
+        id: "BACK_TO_CATEGORIES",
+        title: "Back to Categories",
+        description: "Choose another category"
+    });
 }
 
 
@@ -1098,7 +1134,32 @@ console.log("=================================");
 
 }
 
-   
+async function sendCategoryList(mobile) {
+    const categories = await getAvailableCategories();
+
+    if (!categories.length) {
+        await sendWhatsAppMessage(
+            mobile,
+            "No products are available right now."
+        );
+        return;
+    }
+
+    await sendWhatsAppList(
+        mobile,
+        "Choose a product category:",
+        "View Categories",
+        [{
+            title: "Available Categories",
+            rows: categories.slice(0, 10).map(category => ({
+                id: `CATEGORY_${encodeURIComponent(category)}`,
+                title: category,
+                description: `View available ${category} products`
+            }))
+        }]
+    );
+}
+
 async function sendQuantityList(mobile) {
 
     console.log("=================================");
