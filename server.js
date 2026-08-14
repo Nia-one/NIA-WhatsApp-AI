@@ -1119,6 +1119,12 @@ if (page.searchQuery) {
         title: "Search Again",
         description: "Type another product keyword"
     });
+
+    rows.push({
+        id: "BACK_TO_CATEGORIES",
+        title: "Back to Categories",
+        description: "Browse products by category"
+    });
 }
 
 

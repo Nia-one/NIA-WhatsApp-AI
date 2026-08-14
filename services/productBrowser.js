@@ -38,7 +38,9 @@ async function getSearchProductsPage(query, page = 1) {
     const normalizedQuery = String(query || "").trim().slice(0, 50);
     const products = await searchAvailableProducts(normalizedQuery);
     const normalizedPage = Math.max(1, Number.parseInt(page, 10) || 1);
-    const pageSize = 8;
+    // Reserve up to three WhatsApp list rows for Next, Search Again and
+    // Back to Categories (WhatsApp allows at most 10 rows per list).
+    const pageSize = 7;
     const start = (normalizedPage - 1) * pageSize;
 
     return {
