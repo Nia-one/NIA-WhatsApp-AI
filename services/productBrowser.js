@@ -1,4 +1,8 @@
-const { getProducts, getAvailableProducts } = require("./productService");
+const {
+    getProducts,
+    getAvailableProducts,
+    searchAvailableProducts
+} = require("./productService");
 
 
 async function getProductsPage(page = 1, category = null) {
@@ -28,6 +32,22 @@ async function getProductsPage(page = 1, category = null) {
         totalPages: Math.ceil(products.length / pageSize)
     };
 
+}
+
+async function getSearchProductsPage(query, page = 1) {
+    const normalizedQuery = String(query || "").trim().slice(0, 50);
+    const products = await searchAvailableProducts(normalizedQuery);
+    const normalizedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const pageSize = 8;
+    const start = (normalizedPage - 1) * pageSize;
+
+    return {
+        products: products.slice(start, start + pageSize),
+        page: normalizedPage,
+        searchQuery: normalizedQuery,
+        totalProducts: products.length,
+        totalPages: Math.ceil(products.length / pageSize)
+    };
 }
 
 async function getNextPage(currentPage, category = null) {
@@ -75,6 +95,7 @@ async function getProductByPageSelection(page, selection) {
 
 module.exports = {
     getProductsPage,
+    getSearchProductsPage,
     getNextPage,
     getPreviousPage,
     getProductByPageSelection

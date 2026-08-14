@@ -34,6 +34,9 @@ const errorHandler = require("./src/middleware/errorHandler");
 const { 
     catalogueFlow 
 } = require("./src/flows/catalogueFlow");
+const {
+    productSearchFlow
+} = require("./src/flows/productSearchFlow");
 const { 
     productDetailsFlow 
 } = require("./src/flows/productDetailsFlow");
@@ -465,6 +468,23 @@ if (
 
     return res.sendStatus(200);
 
+}
+
+if (
+    String(userMessage).trim() === "SEARCH_PRODUCTS" ||
+    String(userMessage).trim() === "BACK_TO_SEARCH" ||
+    String(userMessage).startsWith("NEXT_SEARCH_PAGE_") ||
+    state.current_state === "PRODUCT_SEARCH"
+) {
+    await productSearchFlow({
+        mobile,
+        state,
+        userMessage,
+        sendWhatsAppMessage,
+        sendProductList,
+        sendCategoryList
+    });
+    return res.sendStatus(200);
 }
 
 // Keep catalogue pagination globally routable. Interactive list replies can
@@ -1085,6 +1105,22 @@ if (page.category) {
     });
 }
 
+if (page.searchQuery) {
+    if (page.page < page.totalPages) {
+        const encodedQuery = encodeURIComponent(page.searchQuery);
+        const nextRow = rows.find(row => row.id === "NEXT_PAGE");
+        if (nextRow) {
+            nextRow.id = `NEXT_SEARCH_PAGE_${page.page + 1}_${encodedQuery}`;
+        }
+    }
+
+    rows.push({
+        id: "BACK_TO_SEARCH",
+        title: "Search Again",
+        description: "Type another product keyword"
+    });
+}
+
 
     
 
@@ -1151,11 +1187,18 @@ async function sendCategoryList(mobile) {
         "View Categories",
         [{
             title: "Available Categories",
-            rows: categories.slice(0, 10).map(category => ({
+            rows: [
+                {
+                    id: "SEARCH_PRODUCTS",
+                    title: "🔍 Search Products",
+                    description: "Search by name, brand or keyword"
+                },
+                ...categories.slice(0, 9).map(category => ({
                 id: `CATEGORY_${encodeURIComponent(category)}`,
                 title: category,
                 description: `View available ${category} products`
-            }))
+                }))
+            ]
         }]
     );
 }

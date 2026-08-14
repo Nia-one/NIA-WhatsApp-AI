@@ -23,6 +23,11 @@ async function catalogueFlow({
 
 }) {
     if (userMessage === "BACK_TO_CATEGORIES") {
+        await updateConversation(mobile, {
+            current_state: "PRODUCT_CATALOGUE",
+            current_page: 1,
+            current_product_index: 0
+        });
         await sendCategoryList(mobile);
         return true;
     }

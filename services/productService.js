@@ -67,6 +67,27 @@ async function getAvailableCategories() {
     return [...categories.values()].sort((a, b) => a.localeCompare(b));
 }
 
+async function searchAvailableProducts(query) {
+    const normalizedQuery = String(query || "").trim().toLocaleLowerCase();
+    if (!normalizedQuery) return [];
+
+    const products = await getAvailableProducts();
+
+    return products.filter(product => {
+        const searchableText = [
+            product.product_name,
+            product.product_code,
+            product.category,
+            product.brand
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .toLocaleLowerCase();
+
+        return searchableText.includes(normalizedQuery);
+    });
+}
+
 async function getProductById(id) {
 
     const { data, error } = await supabase
@@ -87,5 +108,6 @@ module.exports = {
     getProducts,
     getAvailableProducts,
     getAvailableCategories,
+    searchAvailableProducts,
     getProductById
 };
