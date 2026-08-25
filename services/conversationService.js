@@ -29,7 +29,8 @@ async function saveConversationState(mobile, state) {
         .from("conversation_state")
         .upsert({
             customer_mobile: mobile,
-            current_state: state
+            current_state: state,
+            updated_at: new Date().toISOString()
         })
         .select();
 
@@ -43,6 +44,11 @@ async function saveConversationState(mobile, state) {
 // ======================================
 
 async function updateConversation(mobile, values) {
+
+    values = {
+        ...values,
+        updated_at: new Date().toISOString()
+    };
 
     console.log("########## VERSION 9 JULY ##########");
 
@@ -111,7 +117,8 @@ async function resetConversation(mobile) {
             current_state: "HOME",
             current_page: 1,
             current_product_index: 0,
-            last_product_id: null
+            last_product_id: null,
+            updated_at: new Date().toISOString()
         })
         .eq("customer_mobile", mobile)
         .select();

@@ -6,6 +6,10 @@ const Module = require("node:module");
 
 const { buildOrderAttribution } = require("../services/orderAttribution");
 const { normalizeMobile } = require("../services/retailerService");
+const {
+    markInventoryMutation,
+    isInventoryMutationRecent
+} = require("../services/inventoryMutationGuard");
 
 function loadWithMocks(modulePath, mocks) {
     const resolved = require.resolve(modulePath);
@@ -58,6 +62,12 @@ test("retailer checkout is blocked without retailer identity", () => {
 
 test("mobile normalization accepts country code and punctuation", () => {
     assert.equal(normalizeMobile("+91 98765-43210"), "9876543210");
+});
+
+test("recent order inventory mutations block stale inbound snapshots", () => {
+    assert.equal(isInventoryMutationRecent("PRD-TEST"), false);
+    markInventoryMutation("PRD-TEST", 1000);
+    assert.equal(isInventoryMutationRecent("PRD-TEST"), true);
 });
 
 test("order attribution is written only to orders, not order_items", () => {

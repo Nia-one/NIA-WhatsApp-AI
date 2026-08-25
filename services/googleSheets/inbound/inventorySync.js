@@ -4,6 +4,7 @@ const { SHEETS, TABLES } = require("../../core/constants");
 const { compareObjects } = require("../../core/comparer");
 const { INVENTORY_COMPARE_FIELDS } = require("../../core/constants");
 const crypto = require("crypto");
+const { isInventoryMutationRecent } = require("../../inventoryMutationGuard");
 
 async function getInventoryByProductCode(productCode) {
 
@@ -67,6 +68,11 @@ async function updateInventory(inventory) {
     console.log("--------------------------------");
     console.log(`Updating Inventory : ${inventory.product_code}`);
     console.log("--------------------------------");
+
+    if (isInventoryMutationRecent(inventory.product_code)) {
+        console.log(`Skipped stale inbound inventory snapshot: ${inventory.product_code}`);
+        return;
+    }
 
     const total = Number(inventory.total_stock);
     const reserved = Number(inventory.reserved_stock);
@@ -135,6 +141,11 @@ async function syncInventory() {
     }
 
     for (const inventory of inventoryList) {
+
+        if (isInventoryMutationRecent(inventory.product_code)) {
+            console.log(`Skipped recent order inventory mutation: ${inventory.product_code}`);
+            continue;
+        }
 
         const dbInventory = await getInventoryByProductCode(
             inventory.product_code

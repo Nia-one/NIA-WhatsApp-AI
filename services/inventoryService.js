@@ -3,6 +3,7 @@ const {
     writeSheet,
     updateInventoryRow
 } = require("./googleSheets/googleSheetsService");
+const { markInventoryMutation } = require("./inventoryMutationGuard");
 
 async function syncInventoryRowSafely(inventory) {
     try {
@@ -30,6 +31,9 @@ async function reduceInventory(productId, quantity) {
         console.error("Inventory not found");
         return false;
     }
+
+    // Do not let a concurrent Sheet sync replay the pre-order stock snapshot.
+    markInventoryMutation(inventory.product_code);
 
 console.log("Inventory Record Found:");
 console.log(inventory);
@@ -110,6 +114,8 @@ async function restoreInventory(productId, quantity) {
         return false;
 
     }
+
+    markInventoryMutation(inventory.product_code);
 
     const available = inventory.available_stock + quantity;
     const total = inventory.total_stock + quantity;
