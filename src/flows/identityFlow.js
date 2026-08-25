@@ -4,12 +4,14 @@ const {
     getOrCreateCustomer,
     updateGuestNameById
 } = require("../../services/customerService");
-const { findRetailerByMobile, normalizeMobile } = require("../../services/retailerService");
+const { findRetailerByMobile, createRetailer, normalizeMobile } = require("../../services/retailerService");
 const { updateConversation } = require("../../services/conversationService");
 
 const IDENTITY_STATES = new Set([
     "SELECT_USER_TYPE",
     "ASK_STUDIO_CUSTOMER_NAME",
+    "ASK_RETAILER_NAME",
+    "ASK_RETAILER_MOBILE",
     "ASK_BENEFICIARY_MOBILE",
     "ASK_BENEFICIARY_NAME",
     "CONFIRM_BENEFICIARY"
@@ -52,11 +54,28 @@ async function confirmBeneficiary(mobile, guest, sendWhatsAppButtons) {
     const studio = guest.studio_name || "Pending studio mapping";
     await sendWhatsAppButtons(
         mobile,
-        `Please confirm customer details:\n\n*Name:* ${guest.guest_name}\n*Mobile:* ${guest.mobile_number}\n*Studio:* ${studio}`,
+        `Please confirm the customer for this retailer-assisted order:\n\n*Customer name:* ${guest.guest_name}\n*Customer mobile:* ${guest.mobile_number}\n*Customer studio:* ${studio}`,
         [
             { id: "confirm_beneficiary", title: "Confirm" },
             { id: "change_beneficiary", title: "Change" }
         ]
+    );
+}
+
+async function askCustomerMobile(mobile, retailer, sendWhatsAppMessage) {
+    await updateConversation(mobile, {
+        current_state: "ASK_BENEFICIARY_MOBILE",
+        user_type: "RETAILER",
+        retailer_id: retailer.id,
+        retailer_name: retailer.retailer_name,
+        beneficiary_mobile: null,
+        beneficiary_name: null,
+        beneficiary_guest_id: null,
+        beneficiary_customer_id: null
+    });
+    await sendWhatsAppMessage(
+        mobile,
+        `Retailer verified: *${retailer.retailer_name}*\n\nPlease enter the customer's 10-digit mobile number for whom you are placing this order.`
     );
 }
 
@@ -79,26 +98,54 @@ async function handleIdentityFlow({ mobile, userMessage, state, sendWhatsAppMess
 
         if (input === "role_retailer") {
             const retailer = await findRetailerByMobile(mobile);
-            if (!retailer || !retailer.is_active) {
-                await sendWhatsAppMessage(mobile, "This mobile number is not registered as an active retailer. Please contact the NIA team.");
+            if (!retailer) {
+                await updateConversation(mobile, {
+                    current_state: "ASK_RETAILER_NAME",
+                    user_type: "RETAILER",
+                    retailer_id: null,
+                    retailer_name: null
+                });
+                await sendWhatsAppMessage(mobile, "Your retailer profile was not found. Please enter your full name.");
+                return true;
+            }
+            if (!retailer.is_active) {
+                await sendWhatsAppMessage(mobile, "Your retailer profile is inactive. Please contact the NIA team.");
                 await sendRoleMenu(mobile, sendWhatsAppButtons);
                 return true;
             }
-            await updateConversation(mobile, {
-                current_state: "ASK_BENEFICIARY_MOBILE",
-                user_type: "RETAILER",
-                retailer_id: retailer.id,
-                retailer_name: retailer.retailer_name,
-                beneficiary_mobile: null,
-                beneficiary_name: null,
-                beneficiary_guest_id: null,
-                beneficiary_customer_id: null
-            });
-            await sendWhatsAppMessage(mobile, "Please enter the customer's 10-digit mobile number.");
+            await askCustomerMobile(mobile, retailer, sendWhatsAppMessage);
             return true;
         }
 
         await sendRoleMenu(mobile, sendWhatsAppButtons);
+        return true;
+    }
+
+    if (state.current_state === "ASK_RETAILER_NAME") {
+        if (input.length < 2) {
+            await sendWhatsAppMessage(mobile, "Please enter a valid retailer name.");
+            return true;
+        }
+        await updateConversation(mobile, {
+            current_state: "ASK_RETAILER_MOBILE",
+            retailer_name: input
+        });
+        await sendWhatsAppMessage(mobile, "Please enter your 10-digit retailer mobile number.");
+        return true;
+    }
+
+    if (state.current_state === "ASK_RETAILER_MOBILE") {
+        const retailerMobile = normalizeMobile(input);
+        if (retailerMobile.length !== 10) {
+            await sendWhatsAppMessage(mobile, "Please enter a valid 10-digit retailer mobile number.");
+            return true;
+        }
+        if (retailerMobile !== normalizeMobile(mobile)) {
+            await sendWhatsAppMessage(mobile, "Please enter the same mobile number from which you are using this WhatsApp chat.");
+            return true;
+        }
+        const retailer = await createRetailer({ name: state.retailer_name, mobile: retailerMobile });
+        await askCustomerMobile(mobile, retailer, sendWhatsAppMessage);
         return true;
     }
 
@@ -153,6 +200,10 @@ async function handleIdentityFlow({ mobile, userMessage, state, sendWhatsAppMess
         }
         if (input === "confirm_beneficiary") {
             await updateConversation(mobile, { current_state: "HOME" });
+            await sendWhatsAppMessage(
+                mobile,
+                `Retailer: *${state.retailer_name || "Verified retailer"}*\nOrdering on behalf of:\n*Customer:* ${state.beneficiary_name}\n*Mobile:* ${state.beneficiary_mobile}`
+            );
             await sendHomeMenu(mobile);
             return true;
         }
