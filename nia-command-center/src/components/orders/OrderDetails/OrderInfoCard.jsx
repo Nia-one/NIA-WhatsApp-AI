@@ -81,6 +81,16 @@ export default function OrderInfoCard({ order }) {
           </div>
         </div>
 
+        <div className="border-t pt-4">
+          <p className="text-xs text-slate-500">Order Source</p>
+          <p className="font-medium text-slate-900">
+            {order.orderSource === "RETAILER" ? "Retailer Assisted" : "Direct Customer"}
+          </p>
+          <p className="mt-2 text-xs text-slate-500">Placed By</p>
+          <p className="font-medium text-slate-900">{order.placedByName}</p>
+          <p className="text-xs text-slate-500">{order.placedByMobile}</p>
+        </div>
+
         {/* Items */}
         <div className="flex items-center justify-between border-t pt-4">
           <div className="flex items-center gap-2">

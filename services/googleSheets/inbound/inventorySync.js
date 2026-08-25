@@ -144,7 +144,17 @@ async function syncInventory() {
 
     console.log(`➕ Creating Inventory : ${inventory.product_code}`);
 
-    await createInventory(inventory);
+    try {
+        await createInventory(inventory);
+    } catch (error) {
+        // Keep later valid inventory rows moving when their product row was
+        // rejected (for example, because of a duplicate SKU).
+        if (error.message.startsWith("Product not found")) {
+            console.error(`Skipped ${inventory.product_code}: ${error.message}`);
+            continue;
+        }
+        throw error;
+    }
 
     continue;
 }

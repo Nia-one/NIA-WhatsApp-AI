@@ -17,8 +17,17 @@ export default function OrderRow({
         {order.customer_name}
       </td>
 
-     <td className="px-4 py-3">
+<td className="px-4 py-3">
   {order.customer_mobile}
+</td>
+
+<td className="px-4 py-3">
+  {order.order_source === "RETAILER" ? "Retailer" : "Direct Customer"}
+</td>
+
+<td className="px-4 py-3">
+  <div>{order.placed_by_name || order.customer_name}</div>
+  <div className="text-xs text-slate-500">{order.placed_by_mobile || order.customer_mobile}</div>
 </td>
 
 <td className="px-4 py-3">

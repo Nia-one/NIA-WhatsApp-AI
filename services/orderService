@@ -27,6 +27,8 @@ const {
 const {
     canChangeStatus
 } = require("./orderStatusService");
+const { syncTable } = require("./googleSheets/syncEngine");
+const { upsertDeliveryStatus } = require("./googleSheets/googleSheetsService");
 
 const {
     updateCustomerAnalytics
@@ -45,8 +47,17 @@ const {
     getOrCreateGuest,
     getOrCreateCustomer
 } = require("./customerService");
+const { buildOrderAttribution } = require("./orderAttribution");
 
-async function createOrder(customerMobile) {
+async function createOrder(actorMobile, context = {}) {
+
+    const attribution = buildOrderAttribution(actorMobile, context);
+
+    if (!attribution) {
+        return { success: false, code: "MISSING_ORDER_CONTEXT" };
+    }
+
+    const customerMobile = attribution.beneficiaryMobile;
 
     let stage = "initialization";
     let order = null;
@@ -83,7 +94,7 @@ console.log("Studio Name:", customer.studio_name);
 console.log("================================");
 
     stage = "load_cart";
-    const cartItems = await getCart(customerMobile);
+    const cartItems = await getCart(actorMobile);
 
     logSection("CREATE ORDER");
 
@@ -156,6 +167,11 @@ theatre_name: theatreName,
 // Customer Snapshot
 customer_name: customer.customer_name,
 customer_mobile: customer.mobile_number,
+
+        order_source: attribution.orderSource,
+        retailer_id: attribution.retailerId,
+        placed_by_name: attribution.placedByName || customer.customer_name,
+        placed_by_mobile: attribution.placedByMobile,
 
         subtotal: 0,
         grand_total: 0,
@@ -288,6 +304,7 @@ order_number: orderNumber,
         // Customer Snapshot
         customer_name: customer.customer_name,
         customer_mobile: customer.mobile_number,
+
         studio_id: customer.studio_id || null,
 
         // Product Snapshot
@@ -388,7 +405,7 @@ if (!inventoryUpdated) {
 
 try {
 
-    await clearCart(customerMobile);
+    await clearCart(actorMobile);
 
     logSuccess("Cart cleared");
 
@@ -561,13 +578,15 @@ async function getOrderById(orderId) {
 
 async function updateOrderStatus(orderId, status) {
 
+    status = (status || "").trim().toLowerCase();
+
     // ======================================
 // Get Current Order
 // ======================================
 
 const { data: existingOrder, error: fetchError } = await supabase
     .from("orders")
-    .select("order_status, customer_name, customer_mobile, order_number")
+    .select("order_status, customer_name, customer_mobile, order_number, payment_mode")
     .eq("id", orderId)
     .single();
 
@@ -604,12 +623,19 @@ console.log({
     updated_at: new Date().toISOString(),
 });
 
-    const { data, error } = await supabase
-    .from("orders")
-    .update({
+    const updatePayload = {
         order_status: status,
         updated_at: new Date().toISOString()
-    })
+    };
+
+    if (status === "delivered" &&
+        (existingOrder.payment_mode || "").toLowerCase() === "cod") {
+        updatePayload.payment_status = "Paid";
+    }
+
+    const { data, error } = await supabase
+    .from("orders")
+    .update(updatePayload)
     .eq("id", orderId)
     .select()
     .single();
@@ -636,6 +662,16 @@ console.log(data);
 
     if (historyError) {
         throw historyError;
+    }
+
+    try {
+        await Promise.all([
+            syncTable("orders", "Orders"),
+            syncTable("order_status_history", "Order_Status_History"),
+            upsertDeliveryStatus(orderId, status, "Admin")
+        ]);
+    } catch (syncError) {
+        console.error("Immediate Google Sheets sync failed:", syncError.message);
     }
 
     // ======================================

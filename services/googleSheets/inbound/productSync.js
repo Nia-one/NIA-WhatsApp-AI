@@ -34,6 +34,13 @@ async function readProductMaster() {
 
         });
 
+        // The live sheet uses the display header "Purchase Rate" while the
+        // database and comparison logic use purchase_rate.
+        product.purchase_rate =
+            product.purchase_rate ?? product["Purchase Rate"] ?? 0;
+        product.nia_savings =
+            Number(product.mrp || 0) - Number(product.nia_price || 0);
+
         return product;
 
     });
@@ -155,6 +162,16 @@ async function syncProducts() {
 
     const products = await readProductMaster();
 
+    console.log("================================");
+console.log("TOTAL PRODUCTS:", products.length);
+console.log("================================");
+
+products.forEach((p, index) => {
+    console.log(
+        `${index + 1}. ${p.product_code} | ${p.product_name}`
+    );
+});
+
     if (!products.length) {
 
         console.log("No products found.");
@@ -181,7 +198,19 @@ if (!dbProduct) {
     console.log("🆕 New Product Found :", product.product_code);
     console.log(product);
 
-    await createProduct(product);
+    try {
+        await createProduct(product);
+    } catch (error) {
+        // A single bad/duplicate SKU must not prevent valid later rows from
+        // receiving their Supabase IDs and timestamps.
+        if (error.code === "23505") {
+            console.error(
+                `Skipped ${product.product_code}: ${error.message}`
+            );
+            continue;
+        }
+        throw error;
+    }
 
     continue;
 

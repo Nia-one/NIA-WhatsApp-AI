@@ -50,6 +50,11 @@ const {
     checkoutFlow 
 } = require("./src/flows/checkoutFlow");
 const {
+    IDENTITY_STATES,
+    startIdentityFlow,
+    handleIdentityFlow
+} = require("./src/flows/identityFlow");
+const {
     sendWhatsAppButtons
 } = require("./services/whatsappButtons");
 const {
@@ -249,6 +254,29 @@ console.log("Incoming Mobile:", mobile);
 console.log("Guest Record:", guest);
 console.log("================================");
 
+const identityCommand = userMessage.toLowerCase().trim();
+if (["hi", "hello", "hey", "start", "menu", "home"].includes(identityCommand)) {
+    await startIdentityFlow(mobile, sendWhatsAppButtons);
+    return res.sendStatus(200);
+}
+
+if (!state) {
+    await startIdentityFlow(mobile, sendWhatsAppButtons);
+    return res.sendStatus(200);
+}
+
+if (IDENTITY_STATES.has(state.current_state)) {
+    await handleIdentityFlow({
+        mobile,
+        userMessage,
+        state,
+        sendWhatsAppMessage,
+        sendWhatsAppButtons,
+        sendHomeMenu
+    });
+    return res.sendStatus(200);
+}
+
 
 // =======================================
 // New Guest
@@ -256,6 +284,7 @@ console.log("================================");
 
 if (
     state?.current_state !== "ASK_NAME" &&
+    !state?.user_type &&
     !guest
 ) {
 
@@ -274,6 +303,7 @@ if (
     // Guest exists but name is missing
     if (
     state?.current_state !== "ASK_NAME" &&
+    !state?.user_type &&
     (
     guest &&
     (!guest.guest_name || guest.guest_name.trim() === "")
@@ -565,6 +595,7 @@ if (
 
     await checkoutFlow({
         mobile,
+        state: await getConversationState(mobile),
         userMessage: "",
         sendWhatsAppMessage,
         sendHomeMenu,
@@ -915,6 +946,7 @@ if (state.current_state === "CHECKOUT") {
 
     await checkoutFlow({
     mobile,
+    state,
     userMessage,
     sendWhatsAppMessage,
     sendHomeMenu,

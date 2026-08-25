@@ -15,7 +15,7 @@ async function readSheet(sheetName) {
 
         spreadsheetId: SPREADSHEET_ID,
 
-        range: sheetName
+        range: `${sheetName}!A:ZZZ`
 
     });
 
@@ -57,6 +57,125 @@ async function writeSheet(sheetName, values) {
 
     console.log(`✅ Written data to ${range}`);
 
+}
+
+// Update or append one delivery lifecycle row without rewriting the tab.
+async function upsertDeliveryStatus(orderId, status, deliveryOwner = "Admin") {
+    const sheetName = "Delivery_Status";
+    const rows = await readSheet(sheetName);
+    const headers = rows[0] || [];
+    const required = [
+        "order_id", "dispatched_at", "delivered_at",
+        "delivery_status", "delivery_owner", "updated_at"
+    ];
+
+    for (const header of required) {
+        if (!headers.includes(header)) {
+            throw new Error(`${sheetName} is missing ${header}`);
+        }
+    }
+
+    const now = new Date().toISOString();
+    const normalizedStatus = (status || "").trim().toLowerCase();
+    const orderIdIndex = headers.indexOf("order_id");
+    const existingIndex = rows.findIndex(
+        (row, index) => index > 0 && String(row[orderIdIndex] || "") === String(orderId)
+    );
+    const row = existingIndex > 0
+        ? headers.map((_, index) => rows[existingIndex][index] || "")
+        : headers.map(() => "");
+
+    row[orderIdIndex] = orderId;
+    row[headers.indexOf("delivery_status")] =
+        normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+    row[headers.indexOf("delivery_owner")] = deliveryOwner || "Admin";
+    row[headers.indexOf("updated_at")] = now;
+
+    if (normalizedStatus === "shipped" && !row[headers.indexOf("dispatched_at")]) {
+        row[headers.indexOf("dispatched_at")] = now;
+    }
+    if (normalizedStatus === "delivered") {
+        row[headers.indexOf("delivered_at")] = now;
+    }
+
+    const rowNumber = existingIndex > 0 ? existingIndex + 1 : rows.length + 1;
+    await writeSheet(`${sheetName}!A${rowNumber}`, [row]);
+}
+
+// Merge database-managed values back into a master sheet without clearing it.
+// Existing rows retain their formatting/formulas; database-only rows are appended.
+async function reconcileMasterSheet(sheetName, dbRows, keyField, managedFields) {
+    const rows = await readSheet(sheetName);
+    if (!rows.length) throw new Error(`${sheetName} is empty`);
+
+    const headers = rows[0].map(header => String(header || "").trim());
+    const keyIndex = headers.indexOf(keyField);
+    if (keyIndex === -1) throw new Error(`${sheetName} is missing ${keyField}`);
+
+    const normalizeKey = value => {
+        const text = String(value || "").trim();
+        return keyField === "mobile_number"
+            ? text.replace(/\D/g, "").slice(-10)
+            : text;
+    };
+    const sheetRowsByKey = new Map();
+    rows.slice(1).forEach((row, index) => {
+        const key = normalizeKey(row[keyIndex]);
+        if (key && !sheetRowsByKey.has(key)) {
+            sheetRowsByKey.set(key, { row, rowNumber: index + 2 });
+        }
+    });
+
+    const updates = [];
+    const appends = [];
+
+    for (const dbRow of dbRows) {
+        const key = normalizeKey(dbRow[keyField]);
+        if (!key) continue;
+
+        const sheetRow = sheetRowsByKey.get(key);
+        if (!sheetRow) {
+            appends.push(headers.map(header => dbRow[header] ?? ""));
+            continue;
+        }
+
+        for (const field of managedFields) {
+            const columnIndex = headers.indexOf(field);
+            if (columnIndex === -1) continue;
+
+            const nextValue = dbRow[field] ?? "";
+            const currentValue = sheetRow.row[columnIndex] ?? "";
+            if (String(currentValue) === String(nextValue)) continue;
+
+            updates.push({
+                range: `${sheetName}!${columnToLetter(columnIndex + 1)}${sheetRow.rowNumber}`,
+                values: [[nextValue]]
+            });
+        }
+    }
+
+    for (let index = 0; index < updates.length; index += 500) {
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: {
+                valueInputOption: "RAW",
+                data: updates.slice(index, index + 500)
+            }
+        });
+    }
+
+    if (appends.length) {
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${sheetName}!A:${columnToLetter(headers.length)}`,
+            valueInputOption: "RAW",
+            insertDataOption: "INSERT_ROWS",
+            requestBody: { values: appends }
+        });
+    }
+
+    console.log(`Master sheet ${sheetName} reconciled: ${updates.length} cells updated, ${appends.length} rows appended`);
+    return { updatedCells: updates.length, appendedRows: appends.length };
 }
 
 // Update only backend-managed values for one inventory row. This preserves
@@ -140,7 +259,10 @@ async function clearSheet(sheetName) {
 
         spreadsheetId: SPREADSHEET_ID,
 
-        range: sheetName
+        // Use an explicit full-column range. Clearing only the sheet title can
+        // leave stale trailing rows behind when the replacement dataset is
+        // shorter than the previous one.
+        range: `${sheetName}!A:ZZZ`
 
     });
 
@@ -294,6 +416,10 @@ module.exports = {
     readSheet,
 
     writeSheet,
+
+    upsertDeliveryStatus,
+
+    reconcileMasterSheet,
 
     updateInventoryRow,
 

@@ -2,9 +2,11 @@ const supabase = require("../../config/supabase");
 
 const {
     clearSheet,
+    clearSheetData,
     writeSheet,
     sheetExists,
-    createSheet
+    createSheet,
+    reconcileMasterSheet
 } = require("./googleSheetsService");
 
 
@@ -86,13 +88,42 @@ async function syncTable(tableName, sheetName) {
 
     if (!data || data.length === 0) {
 
+    console.log(
+        `No data found in ${tableName}`
+    );
+
+    const masterSheets = [
+        "Product_Master",
+        "Inventory_Master",
+        "Studio_Master",
+        "Guest_Master",
+        "Retailer_Master"
+    ];
+
+    // Master sheets ko empty hone par overwrite nahi karna
+    if (masterSheets.includes(sheetName)) {
+
         console.log(
-            `No data found in ${tableName}`
+            `⏩ Skipping empty master sheet: ${sheetName}`
         );
 
         return;
-
     }
+
+    // Transaction table empty hai, isliye Google Sheet ka old data clear karo
+    const exists = await sheetExists(sheetName);
+
+    if (exists) {
+
+        await clearSheetData(sheetName);
+
+        console.log(
+            `🧹 ${sheetName} cleared because Supabase table is empty`
+        );
+    }
+
+    return;
+}
 
 
 
@@ -146,12 +177,50 @@ async function syncTable(tableName, sheetName) {
     const masterSheets = [
         "Product_Master",
         "Inventory_Master",
-        "Studio_Master"
+        "Studio_Master",
+        "Guest_Master",
+        "Retailer_Master"
     ];
 
 
 
     if (masterSheets.includes(sheetName)) {
+
+        const reconciliation = {
+            Product_Master: {
+                key: "product_code",
+                fields: ["id", "created_at", "updated_at"]
+            },
+            Inventory_Master: {
+                key: "product_code",
+                fields: [
+                    "id", "product_id", "product_name", "last_stock_update",
+                    "created_at", "updated_at"
+                ]
+            },
+            Studio_Master: {
+                key: "studio_code",
+                fields: ["id", "created_at", "updated_at"]
+            },
+            Guest_Master: {
+                key: "mobile_number",
+                fields: [
+                    "id", "guest_code", "studio_id", "theatre_code",
+                    "created_at", "updated_at"
+                ]
+            },
+            Retailer_Master: {
+                key: "mobile_number",
+                fields: ["id", "retailer_code", "is_active", "created_at", "updated_at"]
+            }
+        }[sheetName];
+
+        await reconcileMasterSheet(
+            sheetName,
+            data,
+            reconciliation.key,
+            reconciliation.fields
+        );
 
         console.log(
             `⏩ Skipping Google Sheet overwrite for ${sheetName}`

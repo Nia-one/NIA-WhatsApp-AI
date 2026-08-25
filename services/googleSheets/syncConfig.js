@@ -31,8 +31,15 @@ module.exports = [
     {
         table: "guest_master",
         sheet: "Guest_Master",
-        direction: "SUPABASE_TO_GOOGLE",
-        role: "TRANSACTION"
+        direction: "GOOGLE_TO_SUPABASE",
+        role: "MASTER"
+    },
+
+    {
+        table: "retailer_master",
+        sheet: "Retailer_Master",
+        direction: "GOOGLE_TO_SUPABASE",
+        role: "MASTER"
     },
 
     {

@@ -19,6 +19,9 @@ export default function OrdersTable({
   Mobile
 </th>
 
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Source</th>
+<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Placed By</th>
+
 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
   Studio
 </th>
@@ -39,7 +42,7 @@ export default function OrdersTable({
           {orders.length === 0 ? (
             <tr>
               <td
-                colSpan="8"
+                colSpan="10"
                 className="py-10 text-center text-slate-500"
               >
                 No orders found.

@@ -59,11 +59,16 @@ async function getOrCreateGuest(mobileNumber) {
 
 async function findCustomerByMobile(mobileNumber) {
 
+    const digits = String(mobileNumber || "").replace(/\D/g, "");
+    const last10 = digits.slice(-10);
+    const with91 = "91" + last10;
+
     const { data, error } = await supabase
         .from("customer_master")
         .select("*")
-        .eq("mobile_number", mobileNumber)
-        .single();
+        .or(`mobile_number.eq.${last10},mobile_number.eq.${with91}`)
+        .limit(1)
+        .maybeSingle();
 
     if (error && error.code !== "PGRST116") {
         console.error("Find Customer Error:", error);
@@ -347,6 +352,17 @@ async function updateGuestName(mobileNumber, guestName) {
 
 }
 
+async function updateGuestNameById(guestId, guestName) {
+    const { data, error } = await supabase
+        .from("guest_master")
+        .update({ guest_name: guestName, updated_at: new Date().toISOString() })
+        .eq("id", guestId)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
 // ======================================
 // Assign Studio
 // ======================================
@@ -449,6 +465,7 @@ module.exports = {
     getCustomerById,
     getCustomerOrders,
     updateGuestName,
+    updateGuestNameById,
     getCustomerStats,
     assignStudio
 };

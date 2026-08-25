@@ -1,4 +1,6 @@
 const supabase = require("../config/supabase");
+const { syncTable } = require("./googleSheets/syncEngine");
+const { upsertDeliveryStatus } = require("./googleSheets/googleSheetsService");
 
 
 // ======================================
@@ -142,6 +144,9 @@ const getRecentOrders = async () => {
       order_date,
       order_status,
       grand_total,
+      order_source,
+      placed_by_name,
+      placed_by_mobile,
       customer_master (
         customer_name,
         mobile_number
@@ -158,7 +163,10 @@ const getRecentOrders = async () => {
     mobile_number: order.customer_master?.mobile_number || null,
     order_date: order.order_date,
     status: order.order_status,
-    total_amount: order.grand_total
+    total_amount: order.grand_total,
+    order_source: order.order_source,
+    placed_by_name: order.placed_by_name,
+    placed_by_mobile: order.placed_by_mobile
   }));
 };
 
@@ -208,6 +216,9 @@ const getOrderDetails = async (orderId) => {
         discount_amount,
         grand_total,
         remarks,
+        order_source,
+        placed_by_name,
+        placed_by_mobile,
         customer_master (
           customer_name,
           mobile_number
@@ -264,13 +275,29 @@ const updateOrderStatus = async (
   updatedBy
 ) => {
 
+  const normalizedStatus = (status || "").trim().toLowerCase();
+  const { data: currentOrder, error: fetchError } = await supabase
+    .from("orders")
+    .select("payment_mode")
+    .eq("id", orderId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  const updatePayload = {
+    order_status: normalizedStatus,
+    updated_at: new Date().toISOString()
+  };
+
+  if (normalizedStatus === "delivered" &&
+      (currentOrder.payment_mode || "").toLowerCase() === "cod") {
+    updatePayload.payment_status = "Paid";
+  }
+
   // Update Order
   const { error: orderError } = await supabase
     .from("orders")
-    .update({
-      order_status: status,
-      updated_at: new Date().toISOString()
-    })
+    .update(updatePayload)
     .eq("id", orderId);
 
   if (orderError) throw orderError;
@@ -280,12 +307,22 @@ const updateOrderStatus = async (
     .from("order_status_history")
     .insert({
       order_id: orderId,
-      status,
+      status: normalizedStatus,
       remarks,
       updated_by: updatedBy
     });
 
   if (historyError) throw historyError;
+
+  try {
+    await Promise.all([
+      syncTable("orders", "Orders"),
+      syncTable("order_status_history", "Order_Status_History"),
+      upsertDeliveryStatus(orderId, normalizedStatus, updatedBy || "Admin")
+    ]);
+  } catch (syncError) {
+    console.error("Immediate Google Sheets sync failed:", syncError.message);
+  }
 
   return {
     message: "Order status updated successfully"

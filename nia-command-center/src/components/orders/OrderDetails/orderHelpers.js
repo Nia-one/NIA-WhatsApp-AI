@@ -35,6 +35,12 @@ export function normalizeOrder(order) {
 
     mobile: order.customer_mobile || "-",
 
+    orderSource: order.order_source || "DIRECT_CUSTOMER",
+
+    placedByName: order.placed_by_name || order.customer_name || "-",
+
+    placedByMobile: order.placed_by_mobile || order.customer_mobile || "-",
+
     studio: order.studio_name || "",
 theatre: order.theatre_name || "",
 

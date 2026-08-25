@@ -8,6 +8,7 @@ const {
 
 async function checkoutFlow({
     mobile,
+    state,
     userMessage,
     sendWhatsAppMessage,
     sendHomeMenu,
@@ -29,7 +30,12 @@ console.log("Mobile:", mobile);
 console.log("Message:", userMessage);
 console.log("================================");
 
-        const result = await createOrder(mobile);
+        const result = await createOrder(mobile, {
+            userType: state?.user_type || "DIRECT_CUSTOMER",
+            beneficiaryMobile: state?.beneficiary_mobile || mobile,
+            retailerId: state?.retailer_id || null,
+            retailerName: state?.retailer_name || null
+        });
 
         if (!result || result.code === "EMPTY_CART") {
 
@@ -41,9 +47,12 @@ console.log("================================");
         }
 
         if (!result.success) {
+            const message = result.code === "MISSING_ORDER_CONTEXT"
+                ? "Customer details are missing. Please type *hi* and select the customer again."
+                : "Sorry, we could not confirm your order right now. Your cart is still available. Please try again.";
             await sendWhatsAppMessage(
                 mobile,
-                "Sorry, we could not confirm your order right now. Your cart is still available. Please try again."
+                message
             );
 
             return true;
