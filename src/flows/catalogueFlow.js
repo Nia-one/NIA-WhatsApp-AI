@@ -22,6 +22,12 @@ async function catalogueFlow({
     sendCategoryList
 
 }) {
+    if (userMessage.startsWith("CATEGORY_PAGE_")) {
+        const page = Number.parseInt(userMessage.slice("CATEGORY_PAGE_".length), 10);
+        await sendCategoryList(mobile, page);
+        return true;
+    }
+
     if (userMessage === "BACK_TO_CATEGORIES") {
         await updateConversation(mobile, {
             current_state: "PRODUCT_CATALOGUE",

@@ -1221,7 +1221,7 @@ console.log("=================================");
 
 }
 
-async function sendCategoryList(mobile) {
+async function sendCategoryList(mobile, requestedPage = 1) {
     const categories = await getAvailableCategories();
 
     if (!categories.length) {
@@ -1232,12 +1232,17 @@ async function sendCategoryList(mobile) {
         return;
     }
 
+    const { buildCategoryPage } = require("./services/categoryBrowser");
+    const categoryPage = buildCategoryPage(categories, requestedPage);
+
     await sendWhatsAppList(
         mobile,
-        "Choose a product category:",
+        `Choose a product category (${categoryPage.page}/${categoryPage.totalPages}):`,
         "View Categories",
         [{
-            title: "Available Categories",
+            title: `Categories ${categoryPage.page}/${categoryPage.totalPages}`,
+            rows: categoryPage.rows
+            /* Legacy single-page category rows retained only for source history.
             rows: [
                 {
                     id: "SEARCH_PRODUCTS",
@@ -1250,6 +1255,7 @@ async function sendCategoryList(mobile) {
                 description: `View available ${category} products`
                 }))
             ]
+            */
         }]
     );
 }
