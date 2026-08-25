@@ -1,6 +1,7 @@
 import OrderStatusChart from "../../components/dashboard/OrderStatusChart";
 import { useOrderStatusAnalytics } from "../../hooks/useReports";
 import ExportButtons from "../../components/common/ExportButtons";
+import { useOrders } from "../../hooks/useOrders";
 
 
 export default function OrdersReportPage() {
@@ -10,6 +11,8 @@ export default function OrdersReportPage() {
     isLoading,
     error,
   } = useOrderStatusAnalytics();
+  const { data: ordersData, isLoading: ordersLoading } = useOrders({ limit: 100 });
+  const orders = ordersData?.orders ?? [];
 
 
   if (isLoading) {
@@ -62,6 +65,29 @@ export default function OrdersReportPage() {
       <OrderStatusChart
         data={orderStatus}
       />
+
+      <div className="overflow-x-auto rounded-3xl bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-xl font-bold text-slate-800">Customer and Retailer Attribution</h2>
+        {ordersLoading ? <p>Loading attribution...</p> : (
+          <table className="min-w-full text-left text-sm">
+            <thead><tr className="border-b text-slate-500">
+              <th className="p-3">Order</th><th className="p-3">Source</th>
+              <th className="p-3">Customer</th><th className="p-3">Customer Mobile</th>
+              <th className="p-3">Placed By</th><th className="p-3">Retailer Mobile</th>
+              <th className="p-3">Total</th><th className="p-3">Status</th>
+            </tr></thead>
+            <tbody>{orders.map(order => <tr key={order.id} className="border-b last:border-0">
+              <td className="p-3 font-medium">{order.order_number}</td>
+              <td className="p-3">{order.order_source === "RETAILER" ? "Retailer" : "Direct Customer"}</td>
+              <td className="p-3">{order.customer_name}</td><td className="p-3">{order.customer_mobile}</td>
+              <td className="p-3">{order.placed_by_name || order.customer_name}</td>
+              <td className="p-3">{order.placed_by_mobile || order.customer_mobile}</td>
+              <td className="p-3">₹{Number(order.grand_total || 0).toLocaleString("en-IN")}</td>
+              <td className="p-3">{order.order_status}</td>
+            </tr>)}</tbody>
+          </table>
+        )}
+      </div>
 
 
     </div>

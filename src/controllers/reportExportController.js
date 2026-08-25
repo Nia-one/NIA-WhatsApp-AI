@@ -238,6 +238,22 @@ exports.exportOrdersReport = async (req, res) => {
                 key: "customer_mobile"
             },
             {
+                header: "Order Source",
+                key: "order_source"
+            },
+            {
+                header: "Retailer ID",
+                key: "retailer_id"
+            },
+            {
+                header: "Placed By Name",
+                key: "placed_by_name"
+            },
+            {
+                header: "Placed By Mobile",
+                key: "placed_by_mobile"
+            },
+            {
                 header: "Studio",
                 key: "studio_name"
             },

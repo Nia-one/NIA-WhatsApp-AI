@@ -630,6 +630,10 @@ const getOrdersReport = async () => {
       payment_mode,
       payment_status,
       order_status,
+      order_source,
+      retailer_id,
+      placed_by_name,
+      placed_by_mobile,
       remarks
 `)
     .order("order_date", {
@@ -666,6 +670,11 @@ const getOrdersReport = async () => {
     payment_status: order.payment_status,
 
     order_status: order.order_status,
+
+    order_source: order.order_source || "DIRECT_CUSTOMER",
+    retailer_id: order.retailer_id || "",
+    placed_by_name: order.placed_by_name || order.customer_name,
+    placed_by_mobile: order.placed_by_mobile || order.customer_mobile,
 
     remarks: order.remarks || ""
 

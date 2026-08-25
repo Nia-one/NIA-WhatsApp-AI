@@ -454,6 +454,21 @@ logInfo("Grand Total", `₹${total}`);
 
 logSuccess("Order completed successfully");
 
+// Keep transaction sheets current immediately after checkout. The scheduled
+// reconciliation remains as a fallback, but a confirmed order should not wait
+// for the next scheduler window to become visible to operations.
+try {
+    await Promise.all([
+        syncTable("orders", "Orders"),
+        syncTable("order_items", "Order_Items")
+    ]);
+    logSuccess("Orders and Order_Items sheets refreshed");
+} catch (sheetSyncError) {
+    // The order is already committed; the regular scheduler will retry.
+    logError("Immediate transaction sheet refresh failed (scheduled retry remains active)");
+    console.error(sheetSyncError);
+}
+
 return {
     success: true,
     orderId: order.order_number,

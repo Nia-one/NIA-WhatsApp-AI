@@ -1,90 +1,49 @@
-import {
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Boxes,
-} from "lucide-react";
-
+import { DollarSign, ShoppingCart, Users, Boxes } from "lucide-react";
 import KpiCard from "../../components/dashboard/KpiCard";
 import { useDashboard } from "../../hooks/useDashboard";
+import { useOrders } from "../../hooks/useOrders";
 
 export default function DashboardPage() {
-
-  const formatGrowth = (value) => {
-  const growth = Number(value ?? 0);
-
-  return `${growth > 0 ? "+" : ""}${growth}%`;
-};
-
   const { data, isLoading, error } = useDashboard();
+  const { data: recentOrdersData } = useOrders({ limit: 20 });
+  const retailerOrders = (recentOrdersData?.orders ?? []).filter(order => order.order_source === "RETAILER");
+  const formatGrowth = value => {
+    const growth = Number(value ?? 0);
+    return `${growth > 0 ? "+" : ""}${growth}%`;
+  };
 
-  if (isLoading) {
-    return (
-      <div className="p-10 text-xl font-semibold">
-        Loading Dashboard...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-10 text-red-600">
-        Failed to load dashboard data.
-      </div>
-    );
-  }
+  if (isLoading) return <div className="p-10 text-xl font-semibold">Loading Dashboard...</div>;
+  if (error) return <div className="p-10 text-red-600">Failed to load dashboard data.</div>;
 
   return (
     <div className="space-y-8">
-
       <div className="rounded-3xl bg-white p-8 shadow-sm">
-
-        <h2 className="text-3xl font-bold">
-          Dashboard
-        </h2>
-
-        <p className="mt-2 text-slate-500">
-          Welcome to the Nia Command Center.
-        </p>
-
+        <h2 className="text-3xl font-bold">Dashboard</h2>
+        <p className="mt-2 text-slate-500">Welcome to the Nia Command Center.</p>
       </div>
-
       <div className="grid grid-cols-4 gap-6">
-
-        <KpiCard
-  title="Revenue"
-  value={`₹${Number(data?.total_revenue ?? 0).toLocaleString("en-IN")}`}
-  change={formatGrowth(data?.revenue_growth)}
-  positive={Number(data?.revenue_growth ?? 0) >= 0}
-  icon={DollarSign}
-/>
-
-<KpiCard
-  title="Orders"
-  value={data?.total_orders ?? 0}
- change={formatGrowth(data?.orders_growth)}
- positive={Number(data?.orders_growth ?? 0) >= 0}
-  icon={ShoppingCart}
-/>
-
-<KpiCard
-  title="Customers"
-  value={data?.total_customers ?? 0}
-  change="+0%"
-  positive
-  icon={Users}
-/>
-
-<KpiCard
-  title="Products"
-  value={data?.total_products ?? 0}
-  change="+0%"
-  positive
-  icon={Boxes}
-/>
-
+        <KpiCard title="Revenue" value={`₹${Number(data?.total_revenue ?? 0).toLocaleString("en-IN")}`} change={formatGrowth(data?.revenue_growth)} positive={Number(data?.revenue_growth ?? 0) >= 0} icon={DollarSign} />
+        <KpiCard title="Orders" value={data?.total_orders ?? 0} change={formatGrowth(data?.orders_growth)} positive={Number(data?.orders_growth ?? 0) >= 0} icon={ShoppingCart} />
+        <KpiCard title="Customers" value={data?.total_customers ?? 0} change="+0%" positive icon={Users} />
+        <KpiCard title="Products" value={data?.total_products ?? 0} change="+0%" positive icon={Boxes} />
       </div>
-
+      <div className="overflow-x-auto rounded-3xl bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-xl font-bold">Recent Retailer-Assisted Orders</h3>
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">{retailerOrders.length} recent</span>
+        </div>
+        <table className="min-w-full text-left text-sm">
+          <thead><tr className="border-b text-slate-500"><th className="p-3">Order</th><th className="p-3">Retailer</th><th className="p-3">Customer</th><th className="p-3">Customer Mobile</th><th className="p-3">Total</th><th className="p-3">Status</th></tr></thead>
+          <tbody>{retailerOrders.slice(0, 10).map(order => (
+            <tr key={order.id} className="border-b last:border-0">
+              <td className="p-3 font-medium">{order.order_number}</td>
+              <td className="p-3">{order.placed_by_name}<div className="text-xs text-slate-500">{order.placed_by_mobile}</div></td>
+              <td className="p-3">{order.customer_name}</td><td className="p-3">{order.customer_mobile}</td>
+              <td className="p-3">₹{Number(order.grand_total || 0).toLocaleString("en-IN")}</td><td className="p-3">{order.order_status}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
     </div>
   );
 }
