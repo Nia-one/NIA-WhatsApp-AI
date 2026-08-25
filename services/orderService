@@ -216,7 +216,7 @@ customer_mobile: customer.mobile_number,
         const timelineCreated = await addOrderTimeline(
             order.id,
             "Confirmed",
-            "Order confirmed and sent to production",
+            "Order confirmed and recorded successfully",
             "System"
         );
 
